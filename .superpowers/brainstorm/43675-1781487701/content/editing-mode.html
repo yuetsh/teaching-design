@@ -1,0 +1,317 @@
+<style>
+  .cards {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+  .card-image {
+    height: 330px;
+    padding: 12px;
+    background: #eef2f6;
+  }
+  .browser {
+    height: 100%;
+    overflow: hidden;
+    border: 1px solid #cfd6df;
+    border-radius: 8px;
+    background: #f3f4f6;
+    box-shadow: 0 8px 24px rgba(38, 50, 65, 0.08);
+  }
+  .toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 30px;
+    padding: 0 9px;
+    color: #51606f;
+    font-size: 9px;
+    background: #ffffff;
+    border-bottom: 1px solid #dde2e8;
+  }
+  .brand {
+    color: #17212b;
+    font-weight: 700;
+  }
+  .actions {
+    display: flex;
+    gap: 4px;
+  }
+  .pill {
+    padding: 3px 7px;
+    border-radius: 4px;
+    color: #fff;
+    background: #1f7a55;
+  }
+  .pill.secondary {
+    color: #40505f;
+    background: #e8edf1;
+  }
+  .workspace {
+    display: grid;
+    grid-template-columns: 55px 1fr;
+    height: calc(100% - 31px);
+  }
+  .sidebar {
+    padding: 7px 5px;
+    color: #6a7785;
+    font-size: 8px;
+    background: #f8fafb;
+    border-right: 1px solid #dde2e8;
+  }
+  .lesson {
+    margin-bottom: 4px;
+    padding: 5px 3px;
+    border-radius: 4px;
+  }
+  .lesson.active {
+    color: #1c6d4c;
+    font-weight: 700;
+    background: #dcefe6;
+  }
+  .canvas {
+    overflow: hidden;
+    padding: 10px;
+  }
+  .paper {
+    box-sizing: border-box;
+    width: 145px;
+    min-height: 255px;
+    margin: 0 auto;
+    padding: 13px 10px;
+    background: #fff;
+    box-shadow: 0 2px 8px rgba(44, 54, 64, 0.13);
+  }
+  .paper-title {
+    margin: 2px 0 8px;
+    color: #1b252d;
+    font: 700 11px/1.2 serif;
+    text-align: center;
+  }
+  .table {
+    border-top: 1px solid #99a3ad;
+    border-left: 1px solid #99a3ad;
+  }
+  .row {
+    display: grid;
+    grid-template-columns: 30px 1fr;
+    min-height: 17px;
+  }
+  .cell {
+    padding: 3px;
+    color: #5d6872;
+    font-size: 6px;
+    border-right: 1px solid #99a3ad;
+    border-bottom: 1px solid #99a3ad;
+  }
+  .cell.label {
+    color: #2b343d;
+    font-weight: 700;
+    text-align: center;
+    background: #f4f6f7;
+  }
+  .editable {
+    background: #fffceb;
+    outline: 1px dashed #d4a933;
+    outline-offset: -2px;
+  }
+  .section-line {
+    height: 5px;
+    margin: 8px 0 4px;
+    border-left: 3px solid #1f7a55;
+    background: #dfe5e9;
+  }
+  .split-workspace {
+    display: grid;
+    grid-template-columns: 48% 52%;
+    height: calc(100% - 31px);
+  }
+  .form-panel {
+    padding: 8px;
+    background: #fff;
+    border-right: 1px solid #d6dde3;
+  }
+  .form-label {
+    margin: 6px 0 2px;
+    color: #33404c;
+    font-size: 7px;
+    font-weight: 700;
+  }
+  .field {
+    height: 15px;
+    border: 1px solid #cdd4db;
+    border-radius: 3px;
+    background: #fafbfc;
+  }
+  .field.large {
+    height: 38px;
+  }
+  .preview-panel {
+    overflow: hidden;
+    padding: 10px 6px;
+    background: #eef1f4;
+  }
+  .preview-panel .paper {
+    width: 118px;
+    min-height: 230px;
+    padding: 11px 8px;
+  }
+  .thumbs {
+    display: flex;
+    gap: 4px;
+    padding: 6px;
+    border-bottom: 1px solid #d9dfe5;
+    background: #fff;
+  }
+  .thumb {
+    width: 24px;
+    height: 34px;
+    border: 1px solid #bec7cf;
+    background: linear-gradient(#fff 20%, #d7dde2 20% 23%, #fff 23% 45%, #d7dde2 45% 48%, #fff 48%);
+  }
+  .thumb.active {
+    border: 2px solid #1f7a55;
+  }
+  .readonly {
+    height: calc(100% - 74px);
+    padding: 10px;
+    overflow: hidden;
+  }
+  .readonly .paper {
+    width: 145px;
+    min-height: 245px;
+  }
+  .badge {
+    display: inline-block;
+    margin-top: 8px;
+    padding: 3px 7px;
+    color: #52616f;
+    font-size: 11px;
+    border-radius: 999px;
+    background: #eef1f4;
+  }
+  @media (max-width: 900px) {
+    .cards {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>
+
+<h2>上传多份 Markdown 后，主要怎样编辑？</h2>
+<p class="subtitle">三种方案都会按文件名自然排序、生成整册 A4 页面并支持一键打印。请选择最符合日常使用习惯的一种。</p>
+
+<div class="cards">
+  <div class="card" data-choice="a" onclick="toggleSelect(this)">
+    <div class="card-image">
+      <div class="browser">
+        <div class="toolbar">
+          <span class="brand">教学设计生成器</span>
+          <span class="actions"><span class="pill secondary">上传 18 份</span><span class="pill">打印整册</span></span>
+        </div>
+        <div class="workspace">
+          <div class="sidebar">
+            <div class="lesson active">01 项目启动</div>
+            <div class="lesson">02 文档结构</div>
+            <div class="lesson">03 图片链接</div>
+            <div class="lesson">04 列表表格</div>
+            <div class="lesson">05 表单设计</div>
+          </div>
+          <div class="canvas">
+            <div class="paper">
+              <div class="paper-title">个人主页——项目启动</div>
+              <div class="table">
+                <div class="row"><div class="cell label">课题</div><div class="cell editable">个人主页——项目启动与环境搭建</div></div>
+                <div class="row"><div class="cell label">课时</div><div class="cell editable">1课时（40分钟）</div></div>
+                <div class="row"><div class="cell label">目标</div><div class="cell editable">知识目标、技能目标、素养目标</div></div>
+              </div>
+              <div class="section-line"></div>
+              <div class="table">
+                <div class="row"><div class="cell label">环节</div><div class="cell editable">教学内容 / 师生活动 / 设计意图</div></div>
+                <div class="row"><div class="cell label">01</div><div class="cell editable">项目情境导入（6分钟）</div></div>
+                <div class="row"><div class="cell label">02</div><div class="cell editable">技术角色认知（8分钟）</div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>A. A4 页面内直接编辑</h3>
+      <p>左侧切换课次，右侧就是可打印页面；点击文字直接修改，所见即所得。</p>
+      <span class="badge">接近参考站 · 推荐</span>
+    </div>
+  </div>
+
+  <div class="card" data-choice="b" onclick="toggleSelect(this)">
+    <div class="card-image">
+      <div class="browser">
+        <div class="toolbar">
+          <span class="brand">教学设计生成器</span>
+          <span class="actions"><span class="pill secondary">上传文件</span><span class="pill">打印</span></span>
+        </div>
+        <div class="split-workspace">
+          <div class="form-panel">
+            <div class="form-label">课题</div><div class="field"></div>
+            <div class="form-label">课时</div><div class="field"></div>
+            <div class="form-label">教学目标</div><div class="field large"></div>
+            <div class="form-label">教学重难点</div><div class="field large"></div>
+            <div class="form-label">教学过程</div><div class="field large"></div>
+          </div>
+          <div class="preview-panel">
+            <div class="paper">
+              <div class="paper-title">个人主页——项目启动</div>
+              <div class="table">
+                <div class="row"><div class="cell label">课题</div><div class="cell">个人主页——项目启动</div></div>
+                <div class="row"><div class="cell label">课时</div><div class="cell">1课时（40分钟）</div></div>
+                <div class="row"><div class="cell label">目标</div><div class="cell">三维教学目标内容</div></div>
+              </div>
+              <div class="section-line"></div>
+              <div class="table">
+                <div class="row"><div class="cell label">环节</div><div class="cell">教学过程预览</div></div>
+                <div class="row"><div class="cell label">01</div><div class="cell">项目情境导入</div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>B. 表单编辑 + 实时预览</h3>
+      <p>左侧字段更容易精确编辑，右侧同步显示打印效果，但可用宽度较紧张。</p>
+      <span class="badge">编辑清晰 · 屏幕占用较大</span>
+    </div>
+  </div>
+
+  <div class="card" data-choice="c" onclick="toggleSelect(this)">
+    <div class="card-image">
+      <div class="browser">
+        <div class="toolbar">
+          <span class="brand">教学设计生成器</span>
+          <span class="actions"><span class="pill secondary">重新上传</span><span class="pill">打印整册</span></span>
+        </div>
+        <div class="thumbs">
+          <div class="thumb active"></div><div class="thumb"></div><div class="thumb"></div><div class="thumb"></div><div class="thumb"></div>
+        </div>
+        <div class="readonly">
+          <div class="paper">
+            <div class="paper-title">个人主页——项目启动</div>
+            <div class="table">
+              <div class="row"><div class="cell label">课题</div><div class="cell">个人主页——项目启动与环境搭建</div></div>
+              <div class="row"><div class="cell label">课时</div><div class="cell">1课时（40分钟）</div></div>
+              <div class="row"><div class="cell label">目标</div><div class="cell">知识、技能与素养目标</div></div>
+            </div>
+            <div class="section-line"></div>
+            <div class="table">
+              <div class="row"><div class="cell label">环节</div><div class="cell">教学内容与教学活动</div></div>
+              <div class="row"><div class="cell label">01</div><div class="cell">项目情境导入（6分钟）</div></div>
+              <div class="row"><div class="cell label">02</div><div class="cell">技术角色认知（8分钟）</div></div>
+              <div class="row"><div class="cell label">03</div><div class="cell">环境搭建示范（8分钟）</div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>C. 只读整册预览</h3>
+      <p>上传后直接排版、检查和打印，不在网站内修改内容，交互最简单。</p>
+      <span class="badge">实现最轻 · 不支持修改</span>
+    </div>
+  </div>
+</div>
