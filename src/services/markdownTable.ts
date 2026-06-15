@@ -101,23 +101,65 @@ export function splitMarkdownRow(row: string): string[] {
 
 const dividerCellPattern = /^:?-{3,}:?$/
 
-function startsWithPipe(line: string): boolean {
+const FENCE_OPEN_PATTERN = / {0,3}(`{3,}|~{3,})/
+const FENCE_CLOSE_PATTERN = / {0,3}(`+|~+)\s*$/
+
+function isTableRow(line: string): boolean {
+  const leading = line.match(/^[ \t]*/)?.[0] ?? ''
+  if (leading.includes('\t') || leading.length >= 4) {
+    return false
+  }
   return line.trimStart().startsWith('|')
+}
+
+function computeFenceMask(lines: readonly string[]): boolean[] {
+  const mask = new Array<boolean>(lines.length).fill(false)
+  let fenceChar: string | null = null
+  let fenceLength = 0
+
+  for (let index = 0; index < lines.length; index++) {
+    const line = lines[index]!
+
+    if (fenceChar === null) {
+      const open = line.match(new RegExp(`^${FENCE_OPEN_PATTERN.source}`))
+      if (open) {
+        mask[index] = true
+        fenceChar = open[1]![0]!
+        fenceLength = open[1]!.length
+      }
+      continue
+    }
+
+    mask[index] = true
+    const close = line.match(new RegExp(`^${FENCE_CLOSE_PATTERN.source}`))
+    if (close && close[1]![0] === fenceChar && close[1]!.length >= fenceLength) {
+      fenceChar = null
+      fenceLength = 0
+    }
+  }
+
+  return mask
 }
 
 export function extractMarkdownTable(
   lines: readonly string[],
   fromIndex = 0,
 ): MarkdownTable | null {
+  const insideFence = computeFenceMask(lines)
+
   for (
     let start = Math.max(0, fromIndex);
     start < lines.length - 1;
     start++
   ) {
+    if (insideFence[start] || insideFence[start + 1]) {
+      continue
+    }
+
     const headerLine = lines[start]!
     const dividerLine = lines[start + 1]!
 
-    if (!startsWithPipe(headerLine) || !startsWithPipe(dividerLine)) {
+    if (!isTableRow(headerLine) || !isTableRow(dividerLine)) {
       continue
     }
 
@@ -135,7 +177,11 @@ export function extractMarkdownTable(
     const rows: string[][] = []
     let end = start + 1
 
-    while (end + 1 < lines.length && startsWithPipe(lines[end + 1]!)) {
+    while (
+      end + 1 < lines.length &&
+      !insideFence[end + 1] &&
+      isTableRow(lines[end + 1]!)
+    ) {
       end++
       rows.push(splitMarkdownRow(lines[end]!))
     }

@@ -1,0 +1,85 @@
+@page {
+  size: A4;
+  margin: 12mm;
+}
+
+.print-book {
+  display: none;
+}
+
+@media print {
+  html,
+  body,
+  #app {
+    margin: 0;
+    padding: 0;
+    background: #fff;
+  }
+
+  .app-shell > *:not(.print-book) {
+    display: none !important;
+  }
+
+  .print-book {
+    display: block;
+  }
+
+  .print-section {
+    break-before: page;
+  }
+
+  .print-section:first-child {
+    break-before: auto;
+  }
+
+  .page {
+    width: auto;
+    min-height: 0;
+    margin: 0;
+    padding: 0;
+    box-shadow: none;
+  }
+
+  .process-table {
+    break-inside: auto;
+  }
+
+  .process-table thead {
+    display: table-header-group;
+  }
+
+  .process-table tr {
+    break-inside: avoid;
+  }
+
+  .section-heading {
+    break-after: avoid;
+  }
+
+  .basic-info-table,
+  .reflection-table,
+  .board-design {
+    break-inside: avoid;
+  }
+
+  .no-print,
+  .warning-summary {
+    display: none !important;
+  }
+
+  .markdown-source {
+    display: none;
+  }
+
+  .editable-text--static,
+  .markdown-preview {
+    border-color: transparent;
+    background: none;
+    white-space: pre-wrap;
+    word-break: break-word;
+  }
+
+  .board-design {
+    word-break: break-word;
+  }
+}
