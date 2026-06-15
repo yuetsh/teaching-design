@@ -322,10 +322,8 @@ table {
   font-size: 13px;
 }
 
-.process-step-name {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
+.process-step-name > * + * {
+  margin-top: 4px;
 }
 
 .process-step-actions {
