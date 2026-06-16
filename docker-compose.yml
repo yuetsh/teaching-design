@@ -1,14 +1,20 @@
 services:
   app:
     build: .
-    ports:
-      - "3001:3001"
+    expose:
+      - 3001
     environment:
       - DEEPSEEK_API_KEY=${DEEPSEEK_API_KEY}
       - TEACHING_BOOKS_DB=/app/data/teaching-books.db
     volumes:
       - db_data:/app/data
     restart: unless-stopped
+    networks:
+      - npm_proxy
+
+networks:
+  npm_proxy:
+    external: true
 
 volumes:
   db_data:
