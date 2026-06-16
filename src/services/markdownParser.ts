@@ -247,7 +247,7 @@ export function parseTeachingDesign(filename: string, markdown: string): Teachin
     if (!reflectionTable) {
       warnings.push({ code: 'missing-reflection', message: '教学成效与反思表格格式不正确。' })
     } else {
-      for (const row of reflectionTable.rows) {
+      for (const row of [reflectionTable.header, ...reflectionTable.rows]) {
         const label = cleanLabel(row[0] ?? '')
         const value = normalizeMultiline(row[1] ?? '')
         if (label === '教学成效') design.effectiveness = value

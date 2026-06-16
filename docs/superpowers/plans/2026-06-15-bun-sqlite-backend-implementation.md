@@ -783,7 +783,7 @@ export function createGenerateRouter(apiKey: string | undefined): Hono {
           Authorization: `Bearer ${apiKey}`,
         },
         body: JSON.stringify({
-          model: 'deepseek-chat',
+          model: 'deepseek-v4-flash',
           messages: [
             { role: 'system', content: SYSTEM_PROMPT },
             { role: 'user', content: `请围绕主题"${topic.trim()}"生成一份教案。` },

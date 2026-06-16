@@ -70,3 +70,7 @@ export function deleteBook(id: string): Promise<{ ok: true }> {
 export function generateLesson(topic: string): Promise<GenerateResult> {
   return request('/api/generate', { method: 'POST', body: JSON.stringify({ topic }) })
 }
+
+export function generateOutline(theme: string): Promise<{ titles: string[] }> {
+  return request('/api/generate/outline', { method: 'POST', body: JSON.stringify({ theme }) })
+}

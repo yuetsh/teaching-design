@@ -1,6 +1,7 @@
+import { readFileSync } from 'node:fs'
 import { Hono } from 'hono'
 
-const SYSTEM_PROMPT = `你是一名教学设计专家，需要根据用户提供的主题生成一份 Markdown 格式的教案。
+const DEFAULT_SYSTEM_PROMPT = `你是一名教学设计专家，需要根据用户提供的主题生成一份 Markdown 格式的教案。
 请严格遵循以下结构（标题、表格列数、章节名称必须完全一致，便于程序解析），只输出 Markdown 正文本身，不要使用代码块包裹整篇文档，不要添加任何额外说明：
 
 1. 第一行是一级标题：\`# <课程标题> 教学设计\`
@@ -18,6 +19,14 @@ const SYSTEM_PROMPT = `你是一名教学设计专家，需要根据用户提供
    - \`| **教学成效** | ... |\`
    - \`| **教学反思** | ... |\`
 `
+
+function loadSystemPrompt(): string {
+  try {
+    return readFileSync('data/SKILLS.md', 'utf8')
+  } catch {
+    return DEFAULT_SYSTEM_PROMPT
+  }
+}
 
 function sanitizeFilename(topic: string): string {
   const sanitized = topic.trim().replace(/[\\/:*?"<>|]/g, '_')
@@ -39,6 +48,8 @@ export function createGenerateRouter(apiKey: string | undefined): Hono {
       return c.json({ error: '未配置 DEEPSEEK_API_KEY。' }, 500)
     }
 
+    const systemPrompt = loadSystemPrompt()
+
     let response: Response
     try {
       response = await fetch('https://api.deepseek.com/chat/completions', {
@@ -48,9 +59,9 @@ export function createGenerateRouter(apiKey: string | undefined): Hono {
           Authorization: `Bearer ${apiKey}`,
         },
         body: JSON.stringify({
-          model: 'deepseek-chat',
+          model: 'deepseek-v4-flash',
           messages: [
-            { role: 'system', content: SYSTEM_PROMPT },
+            { role: 'system', content: systemPrompt },
             { role: 'user', content: `请围绕主题"${topic.trim()}"生成一份教案。` },
           ],
         }),
@@ -66,13 +77,74 @@ export function createGenerateRouter(apiKey: string | undefined): Hono {
     const payload = (await response.json().catch(() => null)) as
       | { choices?: Array<{ message?: { content?: string } }> }
       | null
-    const markdown = payload?.choices?.[0]?.message?.content
+    const raw = payload?.choices?.[0]?.message?.content
 
-    if (!markdown) {
+    if (!raw) {
       return c.json({ error: 'Deepseek 返回内容为空。' }, 502)
     }
 
+    const fenceMatch = raw.trim().match(/^```(?:\w+)?\n([\s\S]*?)\n```\s*$/)
+    const markdown = fenceMatch ? fenceMatch[1]! : raw
+
     return c.json({ filename: `${sanitizeFilename(topic)}.md`, markdown })
+  })
+
+  app.post('/outline', async (c) => {
+    const body = (await c.req.json().catch(() => null)) as { theme?: unknown } | null
+    const theme = body?.theme
+
+    if (typeof theme !== 'string' || theme.trim() === '') {
+      return c.json({ error: '请提供课程主题。' }, 400)
+    }
+
+    if (!apiKey) {
+      return c.json({ error: '未配置 DEEPSEEK_API_KEY。' }, 500)
+    }
+
+    let response: Response
+    try {
+      response = await fetch('https://api.deepseek.com/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${apiKey}`,
+        },
+        body: JSON.stringify({
+          model: 'deepseek-v4-flash',
+          messages: [
+            {
+              role: 'system',
+              content:
+                '你是教学设计专家。根据用户提供的课程主题，生成一份完整的课时大纲标题列表，共约18条。' +
+                '每个标题格式为"项目名——课时任务"，一行一个，不加序号、不加任何说明，直接输出标题列表。',
+            },
+            { role: 'user', content: `课程主题：${theme.trim()}` },
+          ],
+        }),
+      })
+    } catch {
+      return c.json({ error: 'Deepseek 请求失败，请检查网络后重试。' }, 502)
+    }
+
+    if (!response.ok) {
+      return c.json({ error: `Deepseek 请求失败（状态码 ${response.status}）。` }, 502)
+    }
+
+    const payload = (await response.json().catch(() => null)) as
+      | { choices?: Array<{ message?: { content?: string } }> }
+      | null
+    const raw = payload?.choices?.[0]?.message?.content
+
+    if (!raw) {
+      return c.json({ error: 'Deepseek 返回内容为空。' }, 502)
+    }
+
+    const titles = raw
+      .split('\n')
+      .map((line) => line.trim())
+      .filter(Boolean)
+
+    return c.json({ titles })
   })
 
   return app

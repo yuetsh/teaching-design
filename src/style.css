@@ -604,6 +604,7 @@ table {
   margin-bottom: 16px;
 }
 
+.dialog input,
 .book-list-create input,
 .book-list-item input {
   flex: 1 1 auto;
@@ -651,4 +652,59 @@ table {
   flex: 1 1 auto;
   color: var(--muted);
   font-size: 14px;
+}
+
+/* Batch generate dialog */
+.batch-dialog {
+  width: 480px;
+}
+
+.batch-topics-input {
+  display: block;
+  width: 100%;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 8px 12px;
+  resize: vertical;
+  margin-top: 8px;
+}
+
+.batch-topics-input:focus {
+  outline: none;
+  border-color: var(--green-600);
+}
+
+.batch-topics-count {
+  font-size: 13px;
+  color: var(--muted);
+  margin: 6px 0 0;
+}
+
+.batch-progress-label {
+  font-size: 16px;
+  margin: 8px 0 4px;
+}
+
+.batch-current-topic {
+  color: var(--muted);
+  font-size: 14px;
+  margin: 0 0 12px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.batch-progress-bar {
+  height: 6px;
+  background: var(--line);
+  border-radius: 3px;
+  overflow: hidden;
+  margin-bottom: 4px;
+}
+
+.batch-progress-fill {
+  height: 100%;
+  background: var(--green-600);
+  border-radius: 3px;
+  transition: width 0.3s ease;
 }

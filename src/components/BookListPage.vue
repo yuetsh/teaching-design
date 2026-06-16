@@ -22,9 +22,6 @@ const cstDateTimeFormatter = new Intl.DateTimeFormat('zh-CN', {
   year: 'numeric',
   month: '2-digit',
   day: '2-digit',
-  hour: '2-digit',
-  minute: '2-digit',
-  hourCycle: 'h23',
 })
 
 function formatCstUpdatedAt(value: string): string {
@@ -38,7 +35,7 @@ function formatCstUpdatedAt(value: string): string {
       .map((part) => [part.type, part.value]),
   )
 
-  return `${parts.year}/${parts.month}/${parts.day} ${parts.hour}:${parts.minute} CST`
+  return `${parts.year}/${parts.month}/${parts.day}`
 }
 
 async function loadBooks(): Promise<void> {
@@ -105,7 +102,7 @@ async function removeBook(book: BookSummary): Promise<void> {
 
 <template>
   <div class="book-list-page">
-    <h1>教学设计整本</h1>
+    <h1>教学设计</h1>
 
     <form class="book-list-create" @submit.prevent="createBook">
       <input v-model="newBookName" type="text" placeholder="新整本名称" aria-label="新整本名称" />

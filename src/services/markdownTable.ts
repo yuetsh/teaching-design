@@ -166,6 +166,24 @@ export function extractMarkdownTable(
     const header = splitMarkdownRow(headerLine)
     const divider = splitMarkdownRow(dividerLine)
 
+    // Handle separator-first tables (no header row: starts with |:---|:---|)
+    if (header.length > 0 && header.every((cell) => dividerCellPattern.test(cell))) {
+      const rows: string[][] = []
+      let end = start
+
+      while (end + 1 < lines.length && !insideFence[end + 1] && isTableRow(lines[end + 1]!)) {
+        end++
+        const row = splitMarkdownRow(lines[end]!)
+        if (!row.every((cell) => dividerCellPattern.test(cell))) {
+          rows.push(row)
+        }
+      }
+
+      if (rows.length > 0) {
+        return { start, end, header: [], rows }
+      }
+    }
+
     if (
       header.length === 0 ||
       divider.length !== header.length ||
