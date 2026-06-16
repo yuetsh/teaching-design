@@ -50,16 +50,10 @@ export interface TeachingDesign {
   warnings: ParseWarning[]
 }
 
-export interface BookCover {
-  courseName: string
-  teacherName: string
-}
-
 export interface TeachingBook {
   schemaVersion: typeof BOOK_SCHEMA_VERSION
-  cover: BookCover
   designs: TeachingDesign[]
-  selectedId: 'cover' | DesignId
+  selectedId: DesignId | null
   updatedAt: string
 }
 
@@ -104,9 +98,8 @@ export function createEmptyTeachingDesign(filename: string): TeachingDesign {
 export function createEmptyBook(): TeachingBook {
   return {
     schemaVersion: BOOK_SCHEMA_VERSION,
-    cover: { courseName: '', teacherName: '' },
     designs: [],
-    selectedId: 'cover',
+    selectedId: null,
     updatedAt: new Date().toISOString(),
   }
 }

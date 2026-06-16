@@ -74,6 +74,19 @@ describe('WorkspaceView', () => {
     expect(wrapper.text()).toContain('CSS 弹性布局')
   })
 
+  it('does not render cover navigation when lessons exist', async () => {
+    const data = createEmptyBook()
+    const design = createEmptyTeachingDesign('1.md')
+    data.designs.push(design)
+    data.selectedId = design.id
+    mockBook(data)
+
+    const wrapper = mount(WorkspaceView, { props: { bookId: 'b1' } })
+    await flushPromises()
+
+    expect(wrapper.text()).not.toContain('封面')
+  })
+
   it('clears the lessons after confirmation', async () => {
     const data = createEmptyBook()
     data.designs.push(createEmptyTeachingDesign('1.md'))

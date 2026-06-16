@@ -4,11 +4,11 @@ import type { DesignId, TeachingDesign } from '../domain/teachingDesign'
 
 defineProps<{
   designs: TeachingDesign[]
-  selectedId: 'cover' | DesignId
+  selectedId: DesignId | null
 }>()
 
 const emit = defineEmits<{
-  select: [id: 'cover' | DesignId]
+  select: [id: DesignId]
   remove: [id: DesignId]
   move: [from: number, to: number]
 }>()
@@ -29,15 +29,6 @@ function onDrop(targetIndex: number): void {
 
 <template>
   <nav class="lesson-sidebar" aria-label="教案目录">
-    <button
-      type="button"
-      class="lesson-sidebar-item lesson-sidebar-cover"
-      :class="{ 'lesson-sidebar-item--active': selectedId === 'cover' }"
-      @click="emit('select', 'cover')"
-    >
-      封面
-    </button>
-
     <ul class="lesson-sidebar-list">
       <li
         v-for="(design, index) in designs"

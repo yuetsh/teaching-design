@@ -1,7 +1,6 @@
 import { nextTick, ref, watch, type Ref } from 'vue'
 import {
   createEmptyBook,
-  type BookCover,
   type DesignId,
   type TeachingBook,
   type TeachingDesign,
@@ -38,10 +37,9 @@ export interface TeachingBookStore {
   warningCount: Ref<number>
   importFiles: (files: readonly File[], strategy: DuplicateStrategy) => Promise<ImportResult>
   detectDuplicates: (files: readonly File[]) => string[]
-  selectPage: (id: 'cover' | DesignId) => void
+  selectPage: (id: DesignId) => void
   moveDesign: (from: number, to: number) => void
   removeDesign: (id: DesignId) => void
-  updateCover: (patch: Partial<BookCover>) => void
   updateDesign: (id: DesignId, updater: (design: TeachingDesign) => void) => void
   clearBook: () => void
   generateLesson: (topic: string) => Promise<GenerateLessonResult>
@@ -67,7 +65,7 @@ export function useTeachingBook(bookId: string): TeachingBookStore {
     const current = book.value
     hasDesigns.value = current.designs.length > 0
     selectedDesign.value =
-      current.selectedId === 'cover'
+      current.selectedId === null
         ? null
         : current.designs.find((design) => design.id === current.selectedId) ?? null
     warningCount.value = current.designs.reduce(
@@ -176,7 +174,7 @@ export function useTeachingBook(bookId: string): TeachingBookStore {
       }
     }
 
-    if (imported > 0 && book.value.selectedId === 'cover' && book.value.designs.length > 0) {
+    if (imported > 0 && book.value.selectedId === null && book.value.designs.length > 0) {
       book.value.selectedId = book.value.designs[0]!.id
     }
 
@@ -187,7 +185,7 @@ export function useTeachingBook(bookId: string): TeachingBookStore {
     return { imported, failed, duplicates }
   }
 
-  function selectPage(id: 'cover' | DesignId): void {
+  function selectPage(id: DesignId): void {
     book.value.selectedId = id
   }
 
@@ -210,14 +208,9 @@ export function useTeachingBook(bookId: string): TeachingBookStore {
     designs.splice(index, 1)
 
     if (book.value.selectedId === id) {
-      book.value.selectedId = designs[index]?.id ?? designs[index - 1]?.id ?? 'cover'
+      book.value.selectedId = designs[index]?.id ?? designs[index - 1]?.id ?? null
     }
 
-    touch()
-  }
-
-  function updateCover(patch: Partial<BookCover>): void {
-    Object.assign(book.value.cover, patch)
     touch()
   }
 
@@ -232,7 +225,7 @@ export function useTeachingBook(bookId: string): TeachingBookStore {
 
   function clearBook(): void {
     book.value.designs = []
-    book.value.selectedId = 'cover'
+    book.value.selectedId = null
     touch()
   }
 
@@ -286,7 +279,6 @@ export function useTeachingBook(bookId: string): TeachingBookStore {
     selectPage,
     moveDesign,
     removeDesign,
-    updateCover,
     updateDesign,
     clearBook,
     generateLesson,

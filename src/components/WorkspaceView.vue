@@ -32,7 +32,6 @@ const {
   selectPage,
   moveDesign,
   removeDesign,
-  updateCover,
   updateDesign,
   clearBook,
   generateLesson,
@@ -299,10 +298,7 @@ function closeFixDialog(): void {
             @move="moveDesign"
           />
           <A4Workspace
-            :cover="book.cover"
-            :selected-id="book.selectedId"
             :selected-design="selectedDesign"
-            @update:cover="updateCover"
             @update:design="handleDesignUpdate"
           />
         </div>

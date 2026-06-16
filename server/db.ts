@@ -28,6 +28,16 @@ interface BookRow {
   updated_at: string
 }
 
+type StoredTeachingBook = Omit<TeachingBook, 'selectedId'> & {
+  cover?: unknown
+  selectedId?: string | null
+}
+
+interface NormalizedBookData {
+  data: TeachingBook
+  changed: boolean
+}
+
 export interface UserRecord {
   id: string
   username: string
@@ -77,10 +87,59 @@ const SCHEMA = `
   )
 `
 
+function normalizeBookData(raw: StoredTeachingBook): NormalizedBookData {
+  const data = { ...raw, designs: Array.isArray(raw.designs) ? raw.designs : [] }
+  let changed = false
+
+  if ('cover' in data) {
+    delete data.cover
+    changed = true
+  }
+
+  const selectedId = data.selectedId ?? null
+  const firstDesignId = data.designs[0]?.id ?? null
+  const selectedExists =
+    selectedId !== null && data.designs.some((design) => design.id === selectedId)
+
+  let normalizedSelectedId: TeachingBook['selectedId']
+  if (selectedId === 'cover' || (selectedId !== null && !selectedExists)) {
+    normalizedSelectedId = firstDesignId
+    changed = selectedId !== normalizedSelectedId || changed
+  } else {
+    normalizedSelectedId = selectedId as TeachingBook['selectedId']
+  }
+
+  return {
+    data: {
+      schemaVersion: data.schemaVersion,
+      designs: data.designs,
+      selectedId: normalizedSelectedId,
+      updatedAt: data.updatedAt,
+    },
+    changed,
+  }
+}
+
+function parseBookData(data: string): TeachingBook {
+  return normalizeBookData(JSON.parse(data) as StoredTeachingBook).data
+}
+
+function migrateStoredBooks(db: Database): void {
+  const rows = db.query<{ id: string; data: string }, []>('SELECT id, data FROM books').all()
+
+  for (const row of rows) {
+    const normalized = normalizeBookData(JSON.parse(row.data) as StoredTeachingBook)
+    if (normalized.changed) {
+      db.run('UPDATE books SET data = ? WHERE id = ?', [JSON.stringify(normalized.data), row.id])
+    }
+  }
+}
+
 export function openDb(path: string): Database {
   const db = new Database(path)
   db.run('PRAGMA foreign_keys = ON')
   db.run(SCHEMA)
+  migrateStoredBooks(db)
   return db
 }
 
@@ -93,7 +152,7 @@ export function listBooks(db: Database): BookSummary[] {
     id: row.id,
     name: row.name,
     updatedAt: row.updated_at,
-    lessonCount: (JSON.parse(row.data) as TeachingBook).designs.length,
+    lessonCount: parseBookData(row.data).designs.length,
   }))
 }
 
@@ -124,7 +183,7 @@ export function getBook(db: Database, id: string): BookRecord | null {
     id: row.id,
     name: row.name,
     updatedAt: row.updated_at,
-    data: JSON.parse(row.data) as TeachingBook,
+    data: parseBookData(row.data),
   }
 }
 
@@ -135,7 +194,8 @@ export function saveBookData(db: Database, id: string, data: TeachingBook): Book
   if (!existing) return null
 
   const now = new Date().toISOString()
-  db.run('UPDATE books SET data = ?, updated_at = ? WHERE id = ?', [JSON.stringify(data), now, id])
+  const normalized = normalizeBookData(data as unknown as StoredTeachingBook).data
+  db.run('UPDATE books SET data = ?, updated_at = ? WHERE id = ?', [JSON.stringify(normalized), now, id])
 
   return { id, name: existing.name, updatedAt: now }
 }

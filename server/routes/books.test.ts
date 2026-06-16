@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it } from 'bun:test'
 import type { Database } from 'bun:sqlite'
 import { Hono } from 'hono'
-import { createEmptyBook } from '../../src/domain/teachingDesign'
+import { createEmptyBook, createEmptyTeachingDesign } from '../../src/domain/teachingDesign'
 import { openDb } from '../db'
 import { createBooksRouter } from './books'
 
@@ -64,22 +64,22 @@ describe('books routes', () => {
     expect(res.status).toBe(404)
   })
 
-  it('saves book data', async () => {
+  it('saves book data without cover state', async () => {
     const created = await createViaApi('示例整本')
 
     const data = createEmptyBook()
-    data.cover.courseName = 'Web 前端开发'
+    data.designs.push(createEmptyTeachingDesign('1.md'))
 
     const res = await app.request(`/api/books/${created.id}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ data }),
+      body: JSON.stringify({ data: { ...data, cover: { courseName: '旧课程', teacherName: '旧教师' } } }),
     })
     expect(res.status).toBe(200)
 
     const fetched = await app.request(`/api/books/${created.id}`)
-    const body = (await fetched.json()) as { data: { cover: { courseName: string } } }
-    expect(body.data.cover.courseName).toBe('Web 前端开发')
+    const body = (await fetched.json()) as { data: Record<string, unknown> }
+    expect(body.data).not.toHaveProperty('cover')
   })
 
   it('returns 404 when saving data for a missing book', async () => {

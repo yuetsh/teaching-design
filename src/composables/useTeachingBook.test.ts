@@ -10,15 +10,22 @@ function mockGetBook(data: TeachingBook, id = 'b1'): void {
   vi.mocked(booksApi.getBook).mockResolvedValue({ id, name: '示例整本', updatedAt: data.updatedAt, data })
 }
 
+function createBookWithDesign(filename = '1.md'): { data: TeachingBook; design: ReturnType<typeof createEmptyTeachingDesign> } {
+  const data = createEmptyBook()
+  const design = createEmptyTeachingDesign(filename)
+  data.designs.push(design)
+  data.selectedId = design.id
+  return { data, design }
+}
+
 describe('useTeachingBook', () => {
   beforeEach(() => {
     vi.clearAllMocks()
     vi.useFakeTimers()
   })
 
-  it('loads the book from the API', async () => {
-    const data = createEmptyBook()
-    data.cover.courseName = 'Web 前端开发'
+  it('loads the book from the API without cover state', async () => {
+    const { data } = createBookWithDesign()
     mockGetBook(data)
 
     const store = useTeachingBook('b1')
@@ -26,7 +33,8 @@ describe('useTeachingBook', () => {
 
     expect(booksApi.getBook).toHaveBeenCalledWith('b1')
     expect(store.loadStatus.value).toBe('loaded')
-    expect(store.book.value.cover.courseName).toBe('Web 前端开发')
+    expect(store.book.value).not.toHaveProperty('cover')
+    expect(store.book.value.selectedId).toBe(data.selectedId)
   })
 
   it('sets loadStatus to error when loading fails', async () => {
@@ -82,13 +90,16 @@ describe('useTeachingBook', () => {
   })
 
   it('autosaves the book via the API after the debounce delay', async () => {
-    mockGetBook(createEmptyBook())
+    const { data, design } = createBookWithDesign()
+    mockGetBook(data)
     vi.mocked(booksApi.updateBook).mockResolvedValue({ id: 'b1', name: '示例整本', updatedAt: 'later' })
 
     const store = useTeachingBook('b1')
     await flushPromises()
 
-    store.updateCover({ courseName: '新课程名' })
+    store.updateDesign(design.id, (current) => {
+      current.title = '新课程名'
+    })
     await vi.advanceTimersByTimeAsync(300)
 
     expect(booksApi.updateBook).toHaveBeenCalledWith('b1', store.book.value)
@@ -96,13 +107,16 @@ describe('useTeachingBook', () => {
   })
 
   it('sets saveStatus to error when autosave fails', async () => {
-    mockGetBook(createEmptyBook())
+    const { data, design } = createBookWithDesign()
+    mockGetBook(data)
     vi.mocked(booksApi.updateBook).mockRejectedValue(new Error('保存失败。'))
 
     const store = useTeachingBook('b1')
     await flushPromises()
 
-    store.updateCover({ courseName: '新课程名' })
+    store.updateDesign(design.id, (current) => {
+      current.title = '新课程名'
+    })
     await vi.advanceTimersByTimeAsync(300)
 
     expect(store.saveStatus.value).toBe('error')
@@ -139,10 +153,8 @@ describe('useTeachingBook', () => {
     expect(store.book.value.designs).toHaveLength(0)
   })
 
-  it('clearBook empties designs but keeps the cover', async () => {
-    const data = createEmptyBook()
-    data.cover.courseName = 'Web 前端开发'
-    data.designs.push(createEmptyTeachingDesign('1.md'))
+  it('clearBook empties designs and clears selection', async () => {
+    const { data } = createBookWithDesign()
     mockGetBook(data)
 
     const store = useTeachingBook('b1')
@@ -151,7 +163,22 @@ describe('useTeachingBook', () => {
     store.clearBook()
 
     expect(store.book.value.designs).toEqual([])
-    expect(store.book.value.cover.courseName).toBe('Web 前端开发')
-    expect(store.book.value.selectedId).toBe('cover')
+    expect(store.book.value).not.toHaveProperty('cover')
+    expect(store.book.value.selectedId).toBeNull()
+  })
+
+  it('selects null after removing the last selected lesson', async () => {
+    const { data, design } = createBookWithDesign()
+    mockGetBook(data)
+
+    const store = useTeachingBook('b1')
+    await flushPromises()
+
+    store.removeDesign(design.id)
+    await flushPromises()
+
+    expect(store.book.value.designs).toEqual([])
+    expect(store.book.value.selectedId).toBeNull()
+    expect(store.selectedDesign.value).toBeNull()
   })
 })
