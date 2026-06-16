@@ -1,4 +1,4 @@
-import { ref, watch, type Ref } from 'vue'
+import { nextTick, ref, watch, type Ref } from 'vue'
 import {
   createEmptyBook,
   type BookCover,
@@ -6,7 +6,7 @@ import {
   type TeachingBook,
   type TeachingDesign,
 } from '../domain/teachingDesign'
-import { saveBook } from '../services/bookStorage'
+import * as booksApi from '../services/booksApi'
 import { parseTeachingDesign } from '../services/markdownParser'
 import { sortFilesNaturally } from '../services/naturalSort'
 
@@ -16,6 +16,10 @@ export type DuplicateStrategy = 'replace' | 'keep'
 
 export type SaveStatus = 'idle' | 'saving' | 'saved' | 'error'
 
+export type LoadStatus = 'loading' | 'loaded' | 'error'
+
+export type GenerateLessonResult = { ok: true } | { ok: false; message: string }
+
 export interface ImportResult {
   imported: number
   failed: Array<{ filename: string; message: string }>
@@ -24,9 +28,10 @@ export interface ImportResult {
 
 export interface TeachingBookStore {
   book: Ref<TeachingBook>
+  loadStatus: Ref<LoadStatus>
+  loadError: Ref<string | null>
   saveStatus: Ref<SaveStatus>
   lastError: Ref<string | null>
-  pendingDuplicateFiles: Ref<File[]>
   selectedDesign: Ref<TeachingDesign | null>
   hasDesigns: Ref<boolean>
   warningCount: Ref<number>
@@ -37,19 +42,23 @@ export interface TeachingBookStore {
   removeDesign: (id: DesignId) => void
   updateCover: (patch: Partial<BookCover>) => void
   updateDesign: (id: DesignId, updater: (design: TeachingDesign) => void) => void
-  restore: (book: TeachingBook) => void
   clearBook: () => void
+  generateLesson: (topic: string) => Promise<GenerateLessonResult>
 }
 
-export function useTeachingBook(): TeachingBookStore {
+export function useTeachingBook(bookId: string): TeachingBookStore {
   const book = ref<TeachingBook>(createEmptyBook()) as Ref<TeachingBook>
+  const loadStatus = ref<LoadStatus>('loading')
+  const loadError = ref<string | null>(null)
   const saveStatus = ref<SaveStatus>('idle')
   const lastError = ref<string | null>(null)
-  const pendingDuplicateFiles = ref<File[]>([])
 
   const selectedDesign = ref<TeachingDesign | null>(null)
   const hasDesigns = ref(false)
   const warningCount = ref(0)
+
+  let isLoading = true
+  let autosaveTimer: ReturnType<typeof setTimeout> | undefined
 
   function syncDerived(): void {
     const current = book.value
@@ -66,35 +75,55 @@ export function useTeachingBook(): TeachingBookStore {
 
   syncDerived()
 
-  let autosaveTimer: ReturnType<typeof setTimeout> | undefined
-
   function touch(): void {
     book.value.updatedAt = new Date().toISOString()
+  }
+
+  function scheduleSave(): void {
+    if (autosaveTimer !== undefined) {
+      clearTimeout(autosaveTimer)
+    }
+
+    autosaveTimer = setTimeout(() => {
+      saveStatus.value = 'saving'
+      booksApi
+        .updateBook(bookId, book.value)
+        .then(() => {
+          saveStatus.value = 'saved'
+          lastError.value = null
+        })
+        .catch((error: unknown) => {
+          saveStatus.value = 'error'
+          lastError.value = error instanceof Error ? error.message : '保存失败。'
+        })
+    }, AUTOSAVE_DELAY_MS)
   }
 
   watch(
     book,
     () => {
       syncDerived()
-
-      if (autosaveTimer !== undefined) {
-        clearTimeout(autosaveTimer)
-      }
-
-      autosaveTimer = setTimeout(() => {
-        saveStatus.value = 'saving'
-        const result = saveBook(book.value)
-        if (result.ok) {
-          saveStatus.value = 'saved'
-          lastError.value = null
-        } else {
-          saveStatus.value = 'error'
-          lastError.value = result.message
-        }
-      }, AUTOSAVE_DELAY_MS)
+      if (isLoading) return
+      scheduleSave()
     },
     { deep: true },
   )
+
+  async function load(): Promise<void> {
+    try {
+      const record = await booksApi.getBook(bookId)
+      book.value = record.data
+      await nextTick()
+      loadStatus.value = 'loaded'
+    } catch (error) {
+      loadStatus.value = 'error'
+      loadError.value = error instanceof Error ? error.message : '加载失败。'
+    } finally {
+      isLoading = false
+    }
+  }
+
+  void load()
 
   function detectDuplicates(files: readonly File[]): string[] {
     const existingNames = new Set(book.value.designs.map((design) => design.originalFilename))
@@ -197,19 +226,31 @@ export function useTeachingBook(): TeachingBookStore {
     touch()
   }
 
-  function restore(restored: TeachingBook): void {
-    book.value = restored
+  function clearBook(): void {
+    book.value.designs = []
+    book.value.selectedId = 'cover'
+    touch()
   }
 
-  function clearBook(): void {
-    book.value = createEmptyBook()
+  async function generateLesson(topic: string): Promise<GenerateLessonResult> {
+    try {
+      const result = await booksApi.generateLesson(topic)
+      const design = parseTeachingDesign(result.filename, result.markdown)
+      book.value.designs.push(design)
+      book.value.selectedId = design.id
+      touch()
+      return { ok: true }
+    } catch (error) {
+      return { ok: false, message: error instanceof Error ? error.message : '生成失败。' }
+    }
   }
 
   return {
     book,
+    loadStatus,
+    loadError,
     saveStatus,
     lastError,
-    pendingDuplicateFiles,
     selectedDesign,
     hasDesigns,
     warningCount,
@@ -220,7 +261,7 @@ export function useTeachingBook(): TeachingBookStore {
     removeDesign,
     updateCover,
     updateDesign,
-    restore,
     clearBook,
+    generateLesson,
   }
 }
