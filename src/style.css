@@ -590,3 +590,65 @@ table {
     min-height: auto;
   }
 }
+
+/* Book list */
+.book-list-page {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 32px 16px;
+}
+
+.book-list-create {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.book-list-create input,
+.book-list-item input {
+  flex: 1 1 auto;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 8px 12px;
+}
+
+.book-list-create button,
+.book-list-item button {
+  border: 1px solid var(--line);
+  background: #fff;
+  border-radius: 6px;
+  padding: 6px 14px;
+  color: var(--green-700);
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.book-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.book-list-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+}
+
+.book-list-name {
+  font-weight: 600;
+  flex: 0 0 auto;
+}
+
+.book-list-meta {
+  flex: 1 1 auto;
+  color: var(--muted);
+  font-size: 14px;
+}
