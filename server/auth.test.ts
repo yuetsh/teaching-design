@@ -33,8 +33,9 @@ describe('auth utilities', () => {
     expect(payload).toBeNull()
   })
 
-  it('hashToken is deterministic', () => {
+  it('hashToken is deterministic and returns 64-char hex', () => {
     expect(hashToken('abc')).toBe(hashToken('abc'))
     expect(hashToken('abc')).not.toBe(hashToken('xyz'))
+    expect(hashToken('abc')).toMatch(/^[0-9a-f]{64}$/)
   })
 })
