@@ -206,6 +206,11 @@ export function deleteUser(db: Database, id: string): boolean {
   return result.changes > 0
 }
 
+export function updateUserPasswordHash(db: Database, id: string, passwordHash: string): boolean {
+  const result = db.run('UPDATE users SET password_hash = ? WHERE id = ?', [passwordHash, id])
+  return result.changes > 0
+}
+
 export function createRefreshToken(
   db: Database,
   params: { userId: string; tokenHash: string; expiresAt: string },
@@ -232,4 +237,9 @@ export function findRefreshTokenByHash(db: Database, tokenHash: string): Refresh
 export function deleteRefreshTokenByHash(db: Database, tokenHash: string): boolean {
   const result = db.run('DELETE FROM refresh_tokens WHERE token_hash = ?', [tokenHash])
   return result.changes > 0
+}
+
+export function deleteRefreshTokensForUser(db: Database, userId: string): number {
+  const result = db.run('DELETE FROM refresh_tokens WHERE user_id = ?', [userId])
+  return result.changes
 }

@@ -2,8 +2,8 @@ import { afterEach, describe, expect, it, setSystemTime } from 'bun:test'
 import { createEmptyBook, createEmptyTeachingDesign } from '../src/domain/teachingDesign'
 import {
   createBook, deleteBook, getBook, listBooks, openDb, renameBook, saveBookData,
-  createUser, findUserByUsername, findUserById, listUsers, deleteUser,
-  createRefreshToken, findRefreshTokenByHash, deleteRefreshTokenByHash,
+  createUser, findUserByUsername, findUserById, listUsers, deleteUser, updateUserPasswordHash,
+  createRefreshToken, findRefreshTokenByHash, deleteRefreshTokenByHash, deleteRefreshTokensForUser,
 } from './db'
 
 afterEach(() => {
@@ -143,6 +143,19 @@ describe('users and refresh tokens', () => {
     expect(deleteUser(db, 'missing')).toBe(false)
   })
 
+  it('updates a user password hash', () => {
+    const db = openDb(':memory:')
+    const user = createUser(db, { username: 'frank', passwordHash: 'old-hash', role: 'user' })
+
+    expect(updateUserPasswordHash(db, user.id, 'new-hash')).toBe(true)
+    expect(findUserById(db, user.id)?.passwordHash).toBe('new-hash')
+  })
+
+  it('returns false when updating password hash for missing user', () => {
+    const db = openDb(':memory:')
+    expect(updateUserPasswordHash(db, 'missing', 'new-hash')).toBe(false)
+  })
+
   it('creates and finds a refresh token by hash', () => {
     const db = openDb(':memory:')
     const user = createUser(db, { username: 'dave', passwordHash: 'h', role: 'user' })
@@ -158,5 +171,17 @@ describe('users and refresh tokens', () => {
 
     expect(deleteRefreshTokenByHash(db, 'xyz')).toBe(true)
     expect(findRefreshTokenByHash(db, 'xyz')).toBeNull()
+  })
+
+  it('deletes refresh tokens for one user', () => {
+    const db = openDb(':memory:')
+    const first = createUser(db, { username: 'grace', passwordHash: 'h', role: 'user' })
+    const second = createUser(db, { username: 'heidi', passwordHash: 'h', role: 'user' })
+    createRefreshToken(db, { userId: first.id, tokenHash: 'first-token', expiresAt: '2099-01-01T00:00:00.000Z' })
+    createRefreshToken(db, { userId: second.id, tokenHash: 'second-token', expiresAt: '2099-01-01T00:00:00.000Z' })
+
+    expect(deleteRefreshTokensForUser(db, first.id)).toBe(1)
+    expect(findRefreshTokenByHash(db, 'first-token')).toBeNull()
+    expect(findRefreshTokenByHash(db, 'second-token')).not.toBeNull()
   })
 })

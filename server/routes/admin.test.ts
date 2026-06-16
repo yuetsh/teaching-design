@@ -1,8 +1,8 @@
 import { beforeEach, describe, expect, it } from 'bun:test'
 import type { Database } from 'bun:sqlite'
 import { Hono } from 'hono'
-import { hashPassword, signAccessToken } from '../auth'
-import { createUser, openDb } from '../db'
+import { hashPassword, signAccessToken, verifyPassword } from '../auth'
+import { createRefreshToken, createUser, findRefreshTokenByHash, findUserById, openDb } from '../db'
 import { createAdminRouter } from './admin'
 
 const JWT_SECRET = 'test-secret'
@@ -94,5 +94,42 @@ describe('admin routes', () => {
       headers: { Authorization: `Bearer ${adminToken}` },
     })
     expect(res.status).toBe(404)
+  })
+
+  it('resets a user password to the fixed temporary password', async () => {
+    createRefreshToken(db, { userId, tokenHash: 'user-refresh-token', expiresAt: '2099-01-01T00:00:00.000Z' })
+
+    const res = await app.request(`/api/admin/users/${userId}/reset-password`, {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${adminToken}` },
+    })
+
+    expect(res.status).toBe(200)
+    expect(await res.json()).toEqual({ ok: true })
+
+    const updated = findUserById(db, userId)
+    expect(updated).not.toBeNull()
+    expect(await verifyPassword('123456', updated!.passwordHash)).toBe(true)
+    expect(await verifyPassword('userpass', updated!.passwordHash)).toBe(false)
+    expect(findRefreshTokenByHash(db, 'user-refresh-token')).toBeNull()
+  })
+
+  it('returns 404 when resetting password for missing user', async () => {
+    const res = await app.request('/api/admin/users/missing/reset-password', {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${adminToken}` },
+    })
+
+    expect(res.status).toBe(404)
+    expect(await res.json()).toEqual({ error: '用户不存在' })
+  })
+
+  it('returns 403 when non-admin resets a password', async () => {
+    const res = await app.request(`/api/admin/users/${adminId}/reset-password`, {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${userToken}` },
+    })
+
+    expect(res.status).toBe(403)
   })
 })

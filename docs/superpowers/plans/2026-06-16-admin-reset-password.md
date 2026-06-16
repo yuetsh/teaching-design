@@ -226,6 +226,18 @@ In `src/components/AdminPage.test.ts`, update the import line:
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 ```
 
+Update `beforeEach()` so one-shot mock responses from reset tests cannot leak into later tests:
+
+```ts
+  beforeEach(() => {
+    authedFetch.mockReset()
+    logout.mockReset()
+    authedFetch.mockResolvedValue([
+      { id: 'u1', username: 'teacher', role: 'user', createdAt: '2026-01-01T00:00:00.000Z' },
+    ])
+  })
+```
+
 Append these tests inside `describe('AdminPage', () => { ... })`:
 
 ```ts

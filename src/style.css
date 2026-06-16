@@ -162,6 +162,12 @@ input {
   margin: 8px 0 0;
 }
 
+.ui-success {
+  color: var(--green-700);
+  font-size: 14px;
+  margin: 8px 0 0;
+}
+
 /* Toolbar */
 .workspace-toolbar {
   display: flex;

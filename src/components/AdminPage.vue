@@ -11,6 +11,7 @@ const newUsername = ref('')
 const newPassword = ref('')
 const newRole = ref<'user' | 'admin'>('user')
 const error = ref('')
+const success = ref('')
 const loading = ref(false)
 
 async function loadUsers(): Promise<void> {
@@ -24,6 +25,7 @@ async function loadUsers(): Promise<void> {
 async function createUser(): Promise<void> {
   if (!newUsername.value.trim() || !newPassword.value) return
   error.value = ''
+  success.value = ''
   loading.value = true
   try {
     await authedFetch('/api/admin/users', {
@@ -52,6 +54,18 @@ async function removeUser(id: string): Promise<void> {
     await loadUsers()
   } catch (e) {
     error.value = e instanceof Error ? e.message : '删除失败'
+  }
+}
+
+async function resetPassword(id: string): Promise<void> {
+  if (!confirm('确定要将该用户密码重置为 123456 吗？')) return
+  error.value = ''
+  success.value = ''
+  try {
+    await authedFetch(`/api/admin/users/${id}/reset-password`, { method: 'POST' })
+    success.value = '已将密码重置为 123456。'
+  } catch (e) {
+    error.value = e instanceof Error ? e.message : '重置失败'
   }
 }
 
@@ -96,6 +110,7 @@ onMounted(loadUsers)
         </button>
       </form>
       <p v-if="error" class="ui-error">{{ error }}</p>
+      <p v-if="success" class="ui-success">{{ success }}</p>
     </section>
 
     <section class="user-list">
@@ -115,6 +130,14 @@ onMounted(loadUsers)
             <td>{{ u.role === 'admin' ? '管理员' : '普通用户' }}</td>
             <td>{{ new Date(u.createdAt).toLocaleDateString('zh-CN') }}</td>
             <td>
+              <button
+                class="ui-button"
+                type="button"
+                :data-testid="`reset-password-${u.id}`"
+                @click="resetPassword(u.id)"
+              >
+                重置密码
+              </button>
               <button
                 class="ui-button ui-button--danger"
                 type="button"

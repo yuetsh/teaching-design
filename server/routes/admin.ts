@@ -1,8 +1,10 @@
 import type { Database } from 'bun:sqlite'
 import { Hono } from 'hono'
 import { hashPassword } from '../auth'
-import { createUser, deleteUser, listUsers } from '../db'
+import { createUser, deleteRefreshTokensForUser, deleteUser, findUserById, listUsers, updateUserPasswordHash } from '../db'
 import { bearerAuth, type AuthVariables } from '../middleware/bearerAuth'
+
+const RESET_PASSWORD = '123456'
 
 export function createAdminRouter(db: Database, jwtSecret: string) {
   const app = new Hono<{ Variables: AuthVariables }>()
@@ -37,6 +39,18 @@ export function createAdminRouter(db: Database, jwtSecret: string) {
     const passwordHash = await hashPassword(body.password)
     const user = createUser(db, { username: body.username.trim(), passwordHash, role })
     return c.json({ id: user.id, username: user.username, role: user.role, createdAt: user.createdAt })
+  })
+
+  app.post('/users/:id/reset-password', async (c) => {
+    const targetId = c.req.param('id')
+    if (!findUserById(db, targetId)) {
+      return c.json({ error: '用户不存在' }, 404)
+    }
+
+    const passwordHash = await hashPassword(RESET_PASSWORD)
+    updateUserPasswordHash(db, targetId, passwordHash)
+    deleteRefreshTokensForUser(db, targetId)
+    return c.json({ ok: true })
   })
 
   app.delete('/users/:id', (c) => {
