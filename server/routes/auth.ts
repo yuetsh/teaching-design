@@ -16,7 +16,7 @@ function refreshExpiresAt(): string {
   return d.toISOString()
 }
 
-export function createAuthRouter(db: Database, jwtSecret: string): Hono {
+export function createAuthRouter(db: Database, jwtSecret: string) {
   const app = new Hono<{ Variables: { userId: string; role: string } }>()
 
   app.post('/login', async (c) => {
