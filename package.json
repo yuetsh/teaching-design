@@ -4,9 +4,8 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "vite",
+    "dev": "bun run server:dev & vite",
     "build": "vue-tsc -b && vite build",
-    "preview": "vite preview",
     "server": "bun run server/index.ts",
     "server:dev": "bun --watch run server/index.ts",
     "test": "vitest run",
