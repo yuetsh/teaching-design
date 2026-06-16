@@ -105,7 +105,7 @@ async function removeBook(book: BookSummary): Promise<void> {
 <template>
   <div class="book-list-page app-page">
     <div class="app-page-header">
-      <h1>教学设计</h1>
+      <h1>教学设计生成器<span class="page-subtitle">真亦假时假亦真</span></h1>
       <div class="app-page-actions">
         <button v-if="user?.role === 'admin'" class="ui-button" type="button" @click="emit('admin')">
           用户管理

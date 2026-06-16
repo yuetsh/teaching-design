@@ -349,6 +349,15 @@ input {
   color: var(--green-700);
 }
 
+.page-subtitle {
+  font-size: 13px;
+  font-weight: 400;
+  color: var(--green-600);
+  margin-left: 10px;
+  letter-spacing: 0.05em;
+  vertical-align: middle;
+}
+
 .section-heading {
   margin: 12px 0 0;
   padding-left: 10px;
