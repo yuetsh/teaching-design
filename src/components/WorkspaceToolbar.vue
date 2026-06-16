@@ -13,6 +13,8 @@ defineEmits<{
   export: []
   clear: []
   generate: []
+  batchGenerate: []
+  fixBroken: []
   back: []
 }>()
 
@@ -29,14 +31,17 @@ const saveStatusLabel: Record<SaveStatus, string> = {
     <button type="button" data-testid="back" @click="$emit('back')">返回列表</button>
     <button type="button" data-testid="upload" @click="$emit('upload')">导入教案</button>
     <button type="button" data-testid="generate" @click="$emit('generate')">生成教案</button>
+    <button type="button" data-testid="batch-generate" @click="$emit('batchGenerate')">批量生成</button>
     <button type="button" data-testid="print" :disabled="lessonCount === 0" @click="$emit('print')">打印整册</button>
     <button type="button" data-testid="export" :disabled="lessonCount === 0" @click="$emit('export')">导出 Markdown</button>
     <button type="button" data-testid="clear" :disabled="lessonCount === 0" @click="$emit('clear')">清空</button>
 
     <span class="workspace-toolbar-count">共 {{ lessonCount }} 课</span>
-    <span v-if="warningCount > 0" class="workspace-toolbar-warning">
-      {{ warningCount }} 处提示
-    </span>
+    <template v-if="warningCount > 0">
+      <button type="button" data-testid="fix-broken" @click="$emit('fixBroken')">
+        修复 {{ warningCount }} 处提示
+      </button>
+    </template>
     <span class="workspace-toolbar-status" :class="`workspace-toolbar-status--${saveStatus}`">
       {{ saveStatusLabel[props.saveStatus] }}
     </span>
