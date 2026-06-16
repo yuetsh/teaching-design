@@ -98,7 +98,7 @@ function handleClose(): void {
       <!-- 第二步：确认/编辑大纲 -->
       <template v-else-if="phase === 'outline'">
         <p>AI 已生成以下大纲，可直接编辑后开始生成：</p>
-        <textarea v-model="outlineText" class="batch-topics-input" rows="12" />
+        <textarea v-model="outlineText" class="batch-topics-input" rows="24" />
         <p class="batch-topics-count">共 {{ parsedTopics.length }} 个课题</p>
         <div class="dialog-actions">
           <button type="button" :disabled="parsedTopics.length === 0" @click="handleStart">开始生成</button>

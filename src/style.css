@@ -229,8 +229,8 @@ input {
 
 /* Sidebar */
 .lesson-sidebar {
-  width: 260px;
-  flex: 0 0 260px;
+  width: 360px;
+  flex: 0 0 360px;
   background: #fff;
   border-right: 1px solid var(--line);
   overflow-y: auto;
@@ -300,7 +300,7 @@ input {
   color: var(--muted);
   cursor: pointer;
   padding: 0 12px;
-  font-size: 16px;
+  font-size: 24px;
 }
 
 .lesson-sidebar-remove:hover {

@@ -269,7 +269,7 @@ function removeStep(index: number): void {
       </tbody>
     </table>
 
-    <template v-if="design.additionalContent || editable">
+    <template v-if="design.additionalContent.trim()">
       <h2 class="section-heading">附加内容</h2>
       <EditableMarkdown
         :model-value="design.additionalContent"

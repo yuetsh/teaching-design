@@ -244,10 +244,18 @@ export function useTeachingBook(bookId: string): TeachingBookStore {
     touch()
   }
 
+  function removeGeneratedAdditionalContent(design: TeachingDesign): TeachingDesign {
+    design.additionalContent = ''
+    design.warnings = design.warnings.filter((warning) => warning.code !== 'unclassified-content')
+    return design
+  }
+
   async function generateLesson(topic: string): Promise<GenerateLessonResult> {
     try {
       const result = await booksApi.generateLesson(topic)
-      const design = parseTeachingDesign(result.filename, result.markdown)
+      const design = removeGeneratedAdditionalContent(
+        parseTeachingDesign(result.filename, result.markdown),
+      )
       book.value.designs.push(design)
       book.value.selectedId = design.id
       touch()
@@ -299,7 +307,9 @@ export function useTeachingBook(bookId: string): TeachingBookStore {
 
         try {
           const result = await booksApi.generateLesson(topic)
-          results[index] = parseTeachingDesign(result.filename, result.markdown)
+          results[index] = removeGeneratedAdditionalContent(
+            parseTeachingDesign(result.filename, result.markdown),
+          )
           appendReadyLessons()
         } catch (error) {
           firstError = error instanceof Error ? error.message : '生成失败。'
@@ -322,7 +332,9 @@ export function useTeachingBook(bookId: string): TeachingBookStore {
     const topic = existing.originalFilename.replace(/\.md$/i, '')
     try {
       const result = await booksApi.generateLesson(topic)
-      const newDesign = parseTeachingDesign(result.filename, result.markdown)
+      const newDesign = removeGeneratedAdditionalContent(
+        parseTeachingDesign(result.filename, result.markdown),
+      )
       const index = book.value.designs.findIndex((d) => d.id === id)
       if (index !== -1) {
         book.value.designs.splice(index, 1, newDesign)
