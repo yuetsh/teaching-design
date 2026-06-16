@@ -53,24 +53,22 @@ describe('createEmptyTeachingDesign', () => {
 })
 
 describe('createEmptyBook', () => {
-  it('creates the schema defaults with cover selected and an ISO timestamp', () => {
+  it('creates the schema defaults with no selected page and an ISO timestamp', () => {
     const book = createEmptyBook()
 
     expect(book.schemaVersion).toBe(BOOK_SCHEMA_VERSION)
-    expect(book.selectedId).toBe('cover')
+    expect(book.selectedId).toBeNull()
+    expect(book).not.toHaveProperty('cover')
     expect(new Date(book.updatedAt).toISOString()).toBe(book.updatedAt)
   })
 
-  it('creates independent cover and design collections', () => {
+  it('creates independent design collections', () => {
     const first = createEmptyBook()
     const second = createEmptyBook()
 
-    first.cover.courseName = 'Changed'
     first.designs.push(createEmptyTeachingDesign('1.md'))
 
-    expect(first.cover).not.toBe(second.cover)
     expect(first.designs).not.toBe(second.designs)
-    expect(second.cover.courseName).toBe('')
     expect(second.designs).toEqual([])
   })
 })
@@ -79,7 +77,7 @@ describe('domain types', () => {
   it('uses branded string design IDs and literal schema versions', () => {
     expectTypeOf<DesignId>().toExtend<string>()
     expectTypeOf<TeachingDesign['id']>().toEqualTypeOf<DesignId>()
-    expectTypeOf<TeachingBook['selectedId']>().toEqualTypeOf<'cover' | DesignId>()
+    expectTypeOf<TeachingBook['selectedId']>().toEqualTypeOf<DesignId | null>()
     expectTypeOf<TeachingBook['schemaVersion']>().toEqualTypeOf<
       typeof BOOK_SCHEMA_VERSION
     >()

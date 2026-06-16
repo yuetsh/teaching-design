@@ -1,3 +1,6 @@
+import { existsSync, rmSync } from 'node:fs'
+import { tmpdir } from 'node:os'
+import { join } from 'node:path'
 import { afterEach, describe, expect, it, setSystemTime } from 'bun:test'
 import { createEmptyBook, createEmptyTeachingDesign } from '../src/domain/teachingDesign'
 import {
@@ -9,6 +12,12 @@ import {
 afterEach(() => {
   setSystemTime()
 })
+
+function tempDbPath(name: string): string {
+  const path = join(tmpdir(), `fake-teaching-design-${name}-${crypto.randomUUID()}.db`)
+  if (existsSync(path)) rmSync(path)
+  return path
+}
 
 describe('db', () => {
   it('creates a book with empty data', () => {
@@ -55,13 +64,85 @@ describe('db', () => {
     const db = openDb(':memory:')
     const created = createBook(db, '示例整本')
     const data = createEmptyBook()
-    data.cover.courseName = 'Web 前端开发'
+    data.designs.push(createEmptyTeachingDesign('1.md'))
 
     setSystemTime(new Date('2026-02-01T00:00:00.000Z'))
     const result = saveBookData(db, created.id, data)
 
     expect(result).toEqual({ id: created.id, name: '示例整本', updatedAt: '2026-02-01T00:00:00.000Z' })
-    expect(getBook(db, created.id)?.data.cover.courseName).toBe('Web 前端开发')
+    expect(getBook(db, created.id)?.data).not.toHaveProperty('cover')
+  })
+
+  it('migrates legacy cover data and cover selection on open', () => {
+    const path = tempDbPath('cover-migration')
+    const db = openDb(path)
+    const design = createEmptyTeachingDesign('1.md')
+    const legacy = {
+      schemaVersion: 1,
+      cover: { courseName: '旧课程', teacherName: '旧教师' },
+      designs: [design],
+      selectedId: 'cover',
+      updatedAt: '2026-01-01T00:00:00.000Z',
+    }
+    db.run('INSERT INTO books (id, name, data, created_at, updated_at) VALUES (?, ?, ?, ?, ?)', [
+      'legacy-1',
+      '旧整本',
+      JSON.stringify(legacy),
+      '2026-01-01T00:00:00.000Z',
+      '2026-01-01T00:00:00.000Z',
+    ])
+    db.close()
+
+    const reopened = openDb(path)
+    const migrated = getBook(reopened, 'legacy-1')!.data
+    const raw = reopened.query<{ data: string }, [string]>('SELECT data FROM books WHERE id = ?').get('legacy-1')!.data
+    reopened.close()
+    rmSync(path)
+
+    expect(migrated).not.toHaveProperty('cover')
+    expect(migrated.selectedId).toBe(design.id)
+    expect(JSON.parse(raw)).not.toHaveProperty('cover')
+  })
+
+  it('migrates legacy cover selection to null when no lessons exist', () => {
+    const path = tempDbPath('empty-cover-migration')
+    const db = openDb(path)
+    db.run('INSERT INTO books (id, name, data, created_at, updated_at) VALUES (?, ?, ?, ?, ?)', [
+      'legacy-empty',
+      '空整本',
+      JSON.stringify({
+        schemaVersion: 1,
+        cover: { courseName: '旧课程', teacherName: '旧教师' },
+        designs: [],
+        selectedId: 'cover',
+        updatedAt: '2026-01-01T00:00:00.000Z',
+      }),
+      '2026-01-01T00:00:00.000Z',
+      '2026-01-01T00:00:00.000Z',
+    ])
+    db.close()
+
+    const reopened = openDb(path)
+    const migrated = getBook(reopened, 'legacy-empty')!.data
+    reopened.close()
+    rmSync(path)
+
+    expect(migrated).not.toHaveProperty('cover')
+    expect(migrated.selectedId).toBeNull()
+  })
+
+  it('normalizes invalid selected ids to the first lesson', () => {
+    const db = openDb(':memory:')
+    const created = createBook(db, '示例整本')
+    const data = createEmptyBook()
+    const design = createEmptyTeachingDesign('1.md')
+    data.designs.push(design)
+    db.run('UPDATE books SET data = ? WHERE id = ?', [
+      JSON.stringify({ ...data, selectedId: 'missing-id' }),
+      created.id,
+    ])
+
+    expect(getBook(db, created.id)?.data.selectedId).toBe(design.id)
   })
 
   it('returns null when saving data for a missing book', () => {
