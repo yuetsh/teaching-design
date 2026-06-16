@@ -1,6 +1,10 @@
 import { afterEach, describe, expect, it, setSystemTime } from 'bun:test'
 import { createEmptyBook, createEmptyTeachingDesign } from '../src/domain/teachingDesign'
-import { createBook, deleteBook, getBook, listBooks, openDb, renameBook, saveBookData } from './db'
+import {
+  createBook, deleteBook, getBook, listBooks, openDb, renameBook, saveBookData,
+  createUser, findUserByUsername, findUserById, listUsers, deleteUser,
+  createRefreshToken, findRefreshTokenByHash, deleteRefreshTokenByHash,
+} from './db'
 
 afterEach(() => {
   setSystemTime()
@@ -91,5 +95,68 @@ describe('db', () => {
   it('returns false when deleting a missing book', () => {
     const db = openDb(':memory:')
     expect(deleteBook(db, 'missing')).toBe(false)
+  })
+})
+
+describe('users and refresh tokens', () => {
+  it('creates a user and finds them by username', () => {
+    const db = openDb(':memory:')
+    const user = createUser(db, { username: 'alice', passwordHash: 'hash1', role: 'user' })
+
+    expect(user.username).toBe('alice')
+    expect(user.role).toBe('user')
+    expect(findUserByUsername(db, 'alice')).toEqual(user)
+  })
+
+  it('returns null for unknown username', () => {
+    const db = openDb(':memory:')
+    expect(findUserByUsername(db, 'nobody')).toBeNull()
+  })
+
+  it('finds user by id', () => {
+    const db = openDb(':memory:')
+    const user = createUser(db, { username: 'bob', passwordHash: 'hash2', role: 'admin' })
+    expect(findUserById(db, user.id)).toEqual(user)
+  })
+
+  it('lists users ordered by creation time', () => {
+    const db = openDb(':memory:')
+    const a = createUser(db, { username: 'alice', passwordHash: 'h', role: 'user' })
+    const b = createUser(db, { username: 'bob', passwordHash: 'h', role: 'admin' })
+    const list = listUsers(db)
+    expect(list.map((u) => u.id)).toEqual([a.id, b.id])
+    expect(list[0]).not.toHaveProperty('passwordHash')
+  })
+
+  it('deletes a user and cascades to refresh tokens', () => {
+    const db = openDb(':memory:')
+    const user = createUser(db, { username: 'carol', passwordHash: 'h', role: 'user' })
+    createRefreshToken(db, { userId: user.id, tokenHash: 'hash123', expiresAt: '2099-01-01T00:00:00.000Z' })
+
+    expect(deleteUser(db, user.id)).toBe(true)
+    expect(findUserByUsername(db, 'carol')).toBeNull()
+    expect(findRefreshTokenByHash(db, 'hash123')).toBeNull()
+  })
+
+  it('returns false when deleting missing user', () => {
+    const db = openDb(':memory:')
+    expect(deleteUser(db, 'missing')).toBe(false)
+  })
+
+  it('creates and finds a refresh token by hash', () => {
+    const db = openDb(':memory:')
+    const user = createUser(db, { username: 'dave', passwordHash: 'h', role: 'user' })
+    const token = createRefreshToken(db, { userId: user.id, tokenHash: 'abc123', expiresAt: '2099-01-01T00:00:00.000Z' })
+
+    expect(findRefreshTokenByHash(db, 'abc123')).toEqual(token)
+  })
+
+  it('deletes a refresh token by hash', () => {
+    const db = openDb(':memory:')
+    const user = createUser(db, { username: 'eve', passwordHash: 'h', role: 'user' })
+    createRefreshToken(db, { userId: user.id, tokenHash: 'xyz', expiresAt: '2099-01-01T00:00:00.000Z' })
+
+    expect(deleteRefreshTokenByHash(db, 'xyz')).toBe(true)
+    expect(findRefreshTokenByHash(db, 'xyz')).toBeNull()
   })
 })
