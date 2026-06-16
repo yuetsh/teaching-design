@@ -13,6 +13,8 @@ import PrintBook from './PrintBook.vue'
 import UploadDropzone from './UploadDropzone.vue'
 import WorkspaceToolbar from './WorkspaceToolbar.vue'
 
+const BATCH_GENERATE_CONCURRENCY = 3
+
 const props = defineProps<{ bookId: string }>()
 
 defineEmits<{ back: [] }>()
@@ -35,6 +37,7 @@ const {
   updateDesign,
   clearBook,
   generateLesson,
+  generateLessons,
   regenerateLesson,
 } = useTeachingBook(props.bookId)
 
@@ -153,15 +156,19 @@ async function handleBatchStart(topics: string[]): Promise<void> {
   batchTotal.value = topics.length
   batchError.value = null
 
-  for (const topic of topics) {
-    if (batchCancelled.value) break
-    batchCurrentTopic.value = topic
-    const result = await generateLesson(topic)
-    if (!result.ok) {
-      batchError.value = result.message
-      break
-    }
-    batchDone.value++
+  const result = await generateLessons(topics, {
+    concurrency: BATCH_GENERATE_CONCURRENCY,
+    isCancelled: () => batchCancelled.value,
+    onTopicStart: (topic) => {
+      batchCurrentTopic.value = topic
+    },
+    onLessonComplete: (count) => {
+      batchDone.value += count
+    },
+  })
+
+  if (!result.ok) {
+    batchError.value = result.message
   }
 
   batchRunning.value = false

@@ -19,6 +19,17 @@ export type LoadStatus = 'loading' | 'loaded' | 'error'
 
 export type GenerateLessonResult = { ok: true } | { ok: false; message: string }
 
+export type BatchGenerateLessonResult =
+  | { ok: true; completed: number }
+  | { ok: false; completed: number; message: string }
+
+export interface BatchGenerateLessonOptions {
+  concurrency?: number
+  isCancelled?: () => boolean
+  onTopicStart?: (topic: string) => void
+  onLessonComplete?: (count: number) => void
+}
+
 export interface ImportResult {
   imported: number
   failed: Array<{ filename: string; message: string }>
@@ -43,6 +54,10 @@ export interface TeachingBookStore {
   updateDesign: (id: DesignId, updater: (design: TeachingDesign) => void) => void
   clearBook: () => void
   generateLesson: (topic: string) => Promise<GenerateLessonResult>
+  generateLessons: (
+    topics: readonly string[],
+    options?: BatchGenerateLessonOptions,
+  ) => Promise<BatchGenerateLessonResult>
   regenerateLesson: (id: DesignId) => Promise<GenerateLessonResult>
 }
 
@@ -242,6 +257,64 @@ export function useTeachingBook(bookId: string): TeachingBookStore {
     }
   }
 
+  async function generateLessons(
+    topics: readonly string[],
+    options: BatchGenerateLessonOptions = {},
+  ): Promise<BatchGenerateLessonResult> {
+    const concurrency = Math.max(1, options.concurrency ?? 3)
+    const workerCount = Math.min(concurrency, topics.length)
+    const results = new Array<TeachingDesign | undefined>(topics.length)
+    let nextStartIndex = 0
+    let nextAppendIndex = 0
+    let appendedCount = 0
+    let firstError: string | null = null
+
+    function appendReadyLessons(): void {
+      let readyCount = 0
+
+      while (nextAppendIndex < results.length) {
+        const design = results[nextAppendIndex]
+        if (!design) break
+        book.value.designs.push(design)
+        book.value.selectedId = design.id
+        nextAppendIndex++
+        readyCount++
+      }
+
+      if (readyCount > 0) {
+        appendedCount += readyCount
+        touch()
+        options.onLessonComplete?.(readyCount)
+      }
+    }
+
+    async function runWorker(): Promise<void> {
+      while (!firstError && !options.isCancelled?.()) {
+        const index = nextStartIndex
+        if (index >= topics.length) return
+
+        nextStartIndex++
+        const topic = topics[index]!
+        options.onTopicStart?.(topic)
+
+        try {
+          const result = await booksApi.generateLesson(topic)
+          results[index] = parseTeachingDesign(result.filename, result.markdown)
+          appendReadyLessons()
+        } catch (error) {
+          firstError = error instanceof Error ? error.message : '生成失败。'
+        }
+      }
+    }
+
+    await Promise.all(Array.from({ length: workerCount }, () => runWorker()))
+    appendReadyLessons()
+
+    return firstError
+      ? { ok: false, completed: appendedCount, message: firstError }
+      : { ok: true, completed: appendedCount }
+  }
+
   async function regenerateLesson(id: DesignId): Promise<GenerateLessonResult> {
     const existing = book.value.designs.find((d) => d.id === id)
     if (!existing) return { ok: false, message: '找不到该教案。' }
@@ -282,6 +355,7 @@ export function useTeachingBook(bookId: string): TeachingBookStore {
     updateDesign,
     clearBook,
     generateLesson,
+    generateLessons,
     regenerateLesson,
   }
 }

@@ -2,6 +2,7 @@ import { flushPromises, mount } from '@vue/test-utils'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { createEmptyBook, createEmptyTeachingDesign } from '../domain/teachingDesign'
 import * as booksApi from '../services/booksApi'
+import BatchGenerateDialog from './BatchGenerateDialog.vue'
 import GenerateLessonDialog from './GenerateLessonDialog.vue'
 import WorkspaceView from './WorkspaceView.vue'
 
@@ -14,6 +15,32 @@ function mockBook(data = createEmptyBook()): void {
     updatedAt: '2026-01-01T00:00:00.000Z',
     data,
   })
+}
+
+function deferred<T>(): {
+  promise: Promise<T>
+  resolve: (value: T) => void
+  reject: (reason?: unknown) => void
+} {
+  let resolve!: (value: T) => void
+  let reject!: (reason?: unknown) => void
+  const promise = new Promise<T>((promiseResolve, promiseReject) => {
+    resolve = promiseResolve
+    reject = promiseReject
+  })
+  return { promise, resolve, reject }
+}
+
+function generatedLesson(topic: string): booksApi.GenerateResult {
+  return {
+    filename: `${topic}.md`,
+    markdown: [
+      `# ${topic} 教学设计`,
+      '|:---|:---|',
+      `| **课题** | **${topic}** |`,
+      '| **课时** | 1课时（40分钟） |',
+    ].join('\n'),
+  }
 }
 
 describe('WorkspaceView', () => {
@@ -85,6 +112,68 @@ describe('WorkspaceView', () => {
     await flushPromises()
 
     expect(wrapper.text()).not.toContain('封面')
+  })
+
+  it('batch generates up to three lessons concurrently and keeps outline order', async () => {
+    mockBook()
+    const requests = new Map<string, ReturnType<typeof deferred<booksApi.GenerateResult>>>()
+    vi.mocked(booksApi.generateLesson).mockImplementation((topic) => {
+      const request = deferred<booksApi.GenerateResult>()
+      requests.set(topic, request)
+      return request.promise
+    })
+
+    const wrapper = mount(WorkspaceView, { props: { bookId: 'b1' } })
+    await flushPromises()
+
+    await wrapper.get('[data-testid="batch-generate"]').trigger('click')
+    wrapper.getComponent(BatchGenerateDialog).vm.$emit('start', [
+      '第一课',
+      '第二课',
+      '第三课',
+      '第四课',
+      '第五课',
+    ])
+    await flushPromises()
+
+    expect(booksApi.generateLesson).toHaveBeenCalledTimes(3)
+    expect(booksApi.generateLesson).toHaveBeenNthCalledWith(1, '第一课')
+    expect(booksApi.generateLesson).toHaveBeenNthCalledWith(2, '第二课')
+    expect(booksApi.generateLesson).toHaveBeenNthCalledWith(3, '第三课')
+
+    requests.get('第三课')!.resolve(generatedLesson('第三课'))
+    await flushPromises()
+    expect(booksApi.generateLesson).toHaveBeenCalledTimes(4)
+    expect(booksApi.generateLesson).toHaveBeenNthCalledWith(4, '第四课')
+    expect(wrapper.findAll('.lesson-sidebar-topic').map((node) => node.text())).toEqual([])
+
+    requests.get('第四课')!.resolve(generatedLesson('第四课'))
+    await flushPromises()
+    expect(booksApi.generateLesson).toHaveBeenCalledTimes(5)
+    expect(booksApi.generateLesson).toHaveBeenNthCalledWith(5, '第五课')
+
+    requests.get('第一课')!.resolve(generatedLesson('第一课'))
+    await flushPromises()
+    expect(wrapper.findAll('.lesson-sidebar-topic').map((node) => node.text())).toEqual(['第一课'])
+
+    requests.get('第二课')!.resolve(generatedLesson('第二课'))
+    await flushPromises()
+    expect(wrapper.findAll('.lesson-sidebar-topic').map((node) => node.text())).toEqual([
+      '第一课',
+      '第二课',
+      '第三课',
+      '第四课',
+    ])
+
+    requests.get('第五课')!.resolve(generatedLesson('第五课'))
+    await flushPromises()
+    expect(wrapper.findAll('.lesson-sidebar-topic').map((node) => node.text())).toEqual([
+      '第一课',
+      '第二课',
+      '第三课',
+      '第四课',
+      '第五课',
+    ])
   })
 
   it('clears the lessons after confirmation', async () => {
