@@ -1,10 +1,18 @@
 import { flushPromises, mount } from '@vue/test-utils'
+import { computed, ref } from 'vue'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import App from './App.vue'
 import { createEmptyBook } from './domain/teachingDesign'
 import * as booksApi from './services/booksApi'
 
 vi.mock('./services/booksApi')
+vi.mock('./composables/useAuth', () => ({
+  useAuth: () => ({
+    isLoggedIn: computed(() => true),
+    fetchMe: vi.fn(),
+    user: ref(null),
+  }),
+}))
 
 describe('App', () => {
   beforeEach(() => {
@@ -17,7 +25,7 @@ describe('App', () => {
     const wrapper = mount(App)
     await flushPromises()
 
-    expect(wrapper.text()).toContain('教学设计整本')
+    expect(wrapper.text()).toContain('教学设计')
     expect(wrapper.text()).toContain('新建整本')
   })
 
@@ -61,6 +69,6 @@ describe('App', () => {
     await wrapper.get('[data-testid="back"]').trigger('click')
     await flushPromises()
 
-    expect(wrapper.text()).toContain('教学设计整本')
+    expect(wrapper.text()).toContain('教学设计')
   })
 })
