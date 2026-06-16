@@ -2,9 +2,10 @@ import type { Database } from 'bun:sqlite'
 import { Hono } from 'hono'
 import type { TeachingBook } from '../../shared/domain/teachingDesign'
 import { createBook, deleteBook, getBook, listBooks, renameBook, saveBookData } from '../db'
+import type { AuthVariables } from '../middleware/bearerAuth'
 
-export function createBooksRouter(db: Database): Hono {
-  const app = new Hono()
+export function createBooksRouter(db: Database): Hono<{ Variables: AuthVariables }> {
+  const app = new Hono<{ Variables: AuthVariables }>()
 
   app.get('/', (c) => {
     return c.json(listBooks(db))
@@ -18,7 +19,7 @@ export function createBooksRouter(db: Database): Hono {
       return c.json({ error: '请提供整本名称。' }, 400)
     }
 
-    return c.json(createBook(db, name.trim()))
+    return c.json(createBook(db, name.trim(), c.get('userId')))
   })
 
   app.get('/:id', (c) => {

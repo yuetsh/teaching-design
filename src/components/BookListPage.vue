@@ -156,7 +156,7 @@ async function removeBook(book: BookSummary): Promise<void> {
           </template>
           <template v-else>
             <span class="book-list-name">{{ book.name }}</span>
-            <span class="book-list-meta">更新于 {{ formatCstUpdatedAt(book.updatedAt) }} · {{ book.lessonCount }} 课</span>
+            <span class="book-list-meta">更新于 {{ formatCstUpdatedAt(book.updatedAt) }} · {{ book.lessonCount }} 课<template v-if="book.createdBy"> · 创建者：{{ book.createdBy }}</template></span>
             <button class="ui-button" type="button" :data-testid="`open-${book.id}`" @click="emit('open', book.id)">
               打开
             </button>

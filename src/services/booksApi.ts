@@ -6,6 +6,7 @@ export interface BookSummary {
   name: string
   updatedAt: string
   lessonCount: number
+  createdBy: string
 }
 
 export interface BookRecord {

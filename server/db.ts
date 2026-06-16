@@ -6,6 +6,7 @@ export interface BookSummary {
   name: string
   updatedAt: string
   lessonCount: number
+  createdBy: string
 }
 
 export interface BookRecord {
@@ -26,6 +27,7 @@ interface BookRow {
   name: string
   data: string
   updated_at: string
+  created_by: string
 }
 
 type StoredTeachingBook = Omit<TeachingBook, 'selectedId'> & {
@@ -67,7 +69,8 @@ const SCHEMA = `
     name TEXT NOT NULL,
     data TEXT NOT NULL,
     created_at TEXT NOT NULL,
-    updated_at TEXT NOT NULL
+    updated_at TEXT NOT NULL,
+    created_by TEXT NOT NULL DEFAULT ''
   );
 
   CREATE TABLE IF NOT EXISTS users (
@@ -124,6 +127,14 @@ function parseBookData(data: string): TeachingBook {
   return normalizeBookData(JSON.parse(data) as StoredTeachingBook).data
 }
 
+function migrateBookOwnership(db: Database): void {
+  const admin = db
+    .query<{ id: string }, []>("SELECT id FROM users WHERE role = 'admin' LIMIT 1")
+    .get()
+  if (!admin) return
+  db.run("UPDATE books SET created_by = ? WHERE created_by = ''", [admin.id])
+}
+
 function migrateStoredBooks(db: Database): void {
   const rows = db.query<{ id: string; data: string }, []>('SELECT id, data FROM books').all()
 
@@ -139,13 +150,25 @@ export function openDb(path: string): Database {
   const db = new Database(path)
   db.run('PRAGMA foreign_keys = ON')
   db.run(SCHEMA)
+  try {
+    db.run("ALTER TABLE books ADD COLUMN created_by TEXT NOT NULL DEFAULT ''")
+  } catch {
+    // column already exists
+  }
   migrateStoredBooks(db)
+  migrateBookOwnership(db)
   return db
 }
 
 export function listBooks(db: Database): BookSummary[] {
   const rows = db
-    .query<BookRow, []>('SELECT id, name, data, updated_at FROM books ORDER BY updated_at DESC')
+    .query<BookRow & { creator_username: string }, []>(
+      `SELECT b.id, b.name, b.data, b.updated_at, b.created_by,
+              COALESCE(u.username, '') AS creator_username
+       FROM books b
+       LEFT JOIN users u ON b.created_by = u.id
+       ORDER BY b.updated_at DESC`,
+    )
     .all()
 
   return rows.map((row) => ({
@@ -153,21 +176,23 @@ export function listBooks(db: Database): BookSummary[] {
     name: row.name,
     updatedAt: row.updated_at,
     lessonCount: parseBookData(row.data).designs.length,
+    createdBy: row.creator_username,
   }))
 }
 
-export function createBook(db: Database, name: string): BookRecord {
+export function createBook(db: Database, name: string, userId = ''): BookRecord {
   const id = crypto.randomUUID()
   const now = new Date().toISOString()
   const data = createEmptyBook()
   data.updatedAt = now
 
-  db.run('INSERT INTO books (id, name, data, created_at, updated_at) VALUES (?, ?, ?, ?, ?)', [
+  db.run('INSERT INTO books (id, name, data, created_at, updated_at, created_by) VALUES (?, ?, ?, ?, ?, ?)', [
     id,
     name,
     JSON.stringify(data),
     now,
     now,
+    userId,
   ])
 
   return { id, name, updatedAt: now, data }
