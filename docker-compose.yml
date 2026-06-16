@@ -8,7 +8,7 @@ services:
     environment:
       - TEACHING_BOOKS_DB=/app/data/teaching-books.db
     volumes:
-      - db_data:/app/data
+      - ./data:/app/data
     restart: unless-stopped
     networks:
       - npm_proxy
@@ -16,6 +16,3 @@ services:
 networks:
   npm_proxy:
     external: true
-
-volumes:
-  db_data:
