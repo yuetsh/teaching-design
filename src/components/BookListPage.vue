@@ -17,6 +17,30 @@ const actionError = ref<string | null>(null)
 const renamingId = ref<string | null>(null)
 const renameValue = ref('')
 
+const cstDateTimeFormatter = new Intl.DateTimeFormat('zh-CN', {
+  timeZone: 'Asia/Shanghai',
+  year: 'numeric',
+  month: '2-digit',
+  day: '2-digit',
+  hour: '2-digit',
+  minute: '2-digit',
+  hourCycle: 'h23',
+})
+
+function formatCstUpdatedAt(value: string): string {
+  const date = new Date(value)
+  if (Number.isNaN(date.getTime())) return value
+
+  const parts = Object.fromEntries(
+    cstDateTimeFormatter
+      .formatToParts(date)
+      .filter((part) => part.type !== 'literal')
+      .map((part) => [part.type, part.value]),
+  )
+
+  return `${parts.year}/${parts.month}/${parts.day} ${parts.hour}:${parts.minute} CST`
+}
+
 async function loadBooks(): Promise<void> {
   loadStatus.value = 'loading'
   try {
@@ -112,7 +136,7 @@ async function removeBook(book: BookSummary): Promise<void> {
           </template>
           <template v-else>
             <span class="book-list-name">{{ book.name }}</span>
-            <span class="book-list-meta">更新于 {{ book.updatedAt }} · {{ book.lessonCount }} 课</span>
+            <span class="book-list-meta">更新于 {{ formatCstUpdatedAt(book.updatedAt) }} · {{ book.lessonCount }} 课</span>
             <button type="button" :data-testid="`open-${book.id}`" @click="emit('open', book.id)">打开</button>
             <button type="button" :data-testid="`rename-${book.id}`" @click="startRename(book)">重命名</button>
             <button type="button" :data-testid="`delete-${book.id}`" @click="removeBook(book)">删除</button>
