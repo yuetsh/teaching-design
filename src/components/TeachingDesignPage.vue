@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, toRaw } from 'vue'
-import { createTeachingStep, type TeachingDesign, type TeachingStep } from '../domain/teachingDesign'
+import { createTeachingStep, type TeachingDesign, type TeachingStep } from '../../shared/domain/teachingDesign'
 import EditableMarkdown from './EditableMarkdown.vue'
 import EditableText from './EditableText.vue'
 

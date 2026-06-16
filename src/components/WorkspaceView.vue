@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { type DuplicateStrategy, useTeachingBook } from '../composables/useTeachingBook'
-import type { TeachingDesign } from '../domain/teachingDesign'
+import type { TeachingDesign } from '../../shared/domain/teachingDesign'
 import { createBookZip, downloadBlob } from '../services/zipExporter'
 import A4Workspace from './A4Workspace.vue'
 import BatchGenerateDialog from './BatchGenerateDialog.vue'

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref } from 'vue'
-import type { DesignId, TeachingDesign } from '../domain/teachingDesign'
+import type { DesignId, TeachingDesign } from '../../shared/domain/teachingDesign'
 
 defineProps<{
   designs: TeachingDesign[]

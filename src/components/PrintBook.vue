@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { TeachingDesign } from '../domain/teachingDesign'
+import type { TeachingDesign } from '../../shared/domain/teachingDesign'
 import TeachingDesignPage from './TeachingDesignPage.vue'
 
 defineProps<{
