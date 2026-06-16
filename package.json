@@ -7,11 +7,15 @@
     "dev": "vite",
     "build": "vue-tsc -b && vite build",
     "preview": "vite preview",
+    "server": "bun run server/index.ts",
+    "server:dev": "bun --watch run server/index.ts",
     "test": "vitest run",
+    "test:server": "bun test server",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage"
   },
   "dependencies": {
+    "hono": "^4.12.25",
     "jszip": "^3.10.1",
     "markdown-it": "^14.2.0",
     "vue": "^3.5.34"
