@@ -2,10 +2,12 @@
 import { onMounted, ref } from 'vue'
 import * as booksApi from '../services/booksApi'
 import type { BookSummary } from '../services/booksApi'
+import { useAuth } from '../composables/useAuth'
 
 type LoadStatus = 'loading' | 'loaded' | 'error'
 
-const emit = defineEmits<{ open: [id: string] }>()
+const emit = defineEmits<{ open: [id: string]; admin: [] }>()
+const { user, logout } = useAuth()
 
 const books = ref<BookSummary[]>([])
 const loadStatus = ref<LoadStatus>('loading')
@@ -102,7 +104,13 @@ async function removeBook(book: BookSummary): Promise<void> {
 
 <template>
   <div class="book-list-page">
-    <h1>教学设计</h1>
+    <div class="page-header">
+      <h1>教学设计</h1>
+      <div class="header-actions">
+        <button v-if="user?.role === 'admin'" type="button" @click="emit('admin')">用户管理</button>
+        <button type="button" @click="logout">退出登录</button>
+      </div>
+    </div>
 
     <form class="book-list-create" @submit.prevent="createBook">
       <input v-model="newBookName" type="text" placeholder="新整本名称" aria-label="新整本名称" />
@@ -143,3 +151,21 @@ async function removeBook(book: BookSummary): Promise<void> {
     </template>
   </div>
 </template>
+
+<style scoped>
+.page-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+}
+
+.page-header h1 {
+  margin: 0;
+}
+
+.header-actions {
+  display: flex;
+  gap: 0.5rem;
+}
+</style>

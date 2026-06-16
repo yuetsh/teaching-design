@@ -5,6 +5,10 @@ import * as booksApi from '../services/booksApi'
 import BookListPage from './BookListPage.vue'
 
 vi.mock('../services/booksApi')
+vi.mock('../composables/useAuth', () => ({
+  useAuth: () => ({ user: { value: null }, logout: vi.fn() }),
+  authedFetch: vi.fn(),
+}))
 
 describe('BookListPage', () => {
   beforeEach(() => {
