@@ -14,7 +14,11 @@ const error = ref('')
 const loading = ref(false)
 
 async function loadUsers(): Promise<void> {
-  users.value = await authedFetch<UserSummary[]>('/api/admin/users')
+  try {
+    users.value = await authedFetch<UserSummary[]>('/api/admin/users')
+  } catch (e) {
+    error.value = e instanceof Error ? e.message : '加载用户失败'
+  }
 }
 
 async function createUser(): Promise<void> {
