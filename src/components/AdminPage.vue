@@ -63,30 +63,44 @@ onMounted(loadUsers)
 </script>
 
 <template>
-  <div class="admin-page">
-    <header>
-      <button @click="emit('back')">← 返回</button>
+  <div class="admin-page app-page">
+    <header class="app-page-header">
       <h1>用户管理</h1>
-      <button @click="handleLogout">退出登录</button>
+      <div class="app-page-actions">
+        <button class="ui-button" type="button" @click="emit('back')">← 返回</button>
+        <button class="ui-button" type="button" @click="handleLogout">退出登录</button>
+      </div>
     </header>
 
     <section class="create-user">
       <h2>新建用户</h2>
       <form @submit.prevent="createUser">
-        <input v-model="newUsername" placeholder="用户名" :disabled="loading" />
-        <input v-model="newPassword" type="password" placeholder="密码" :disabled="loading" />
-        <select v-model="newRole" :disabled="loading">
+        <input v-model="newUsername" class="ui-field" placeholder="用户名" :disabled="loading" />
+        <input
+          v-model="newPassword"
+          class="ui-field"
+          type="password"
+          placeholder="密码"
+          :disabled="loading"
+        />
+        <select v-model="newRole" class="ui-select" :disabled="loading">
           <option value="user">普通用户</option>
           <option value="admin">管理员</option>
         </select>
-        <button type="submit" :disabled="loading || !newUsername || !newPassword">创建</button>
+        <button
+          class="ui-button ui-button--primary"
+          type="submit"
+          :disabled="loading || !newUsername || !newPassword"
+        >
+          创建
+        </button>
       </form>
-      <p v-if="error" class="error">{{ error }}</p>
+      <p v-if="error" class="ui-error">{{ error }}</p>
     </section>
 
     <section class="user-list">
       <h2>所有用户</h2>
-      <table>
+      <table class="ui-table">
         <thead>
           <tr>
             <th>用户名</th>
@@ -101,7 +115,14 @@ onMounted(loadUsers)
             <td>{{ u.role === 'admin' ? '管理员' : '普通用户' }}</td>
             <td>{{ new Date(u.createdAt).toLocaleDateString('zh-CN') }}</td>
             <td>
-              <button @click="removeUser(u.id)">删除</button>
+              <button
+                class="ui-button ui-button--danger"
+                type="button"
+                :data-testid="`delete-user-${u.id}`"
+                @click="removeUser(u.id)"
+              >
+                删除
+              </button>
             </td>
           </tr>
         </tbody>
@@ -111,69 +132,25 @@ onMounted(loadUsers)
 </template>
 
 <style scoped>
-.admin-page {
-  padding: 1.5rem;
-  max-width: 800px;
-  margin: 0 auto;
-}
-
-header {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-  margin-bottom: 2rem;
-}
-
-header h1 {
+.app-page-header h1 {
   flex: 1;
-  margin: 0;
+}
+
+.create-user {
+  margin-bottom: 24px;
+}
+
+.create-user h2,
+.user-list h2 {
+  margin: 0 0 12px;
+  color: var(--green-700);
+  font-size: 18px;
 }
 
 .create-user form {
   display: flex;
-  gap: 0.5rem;
+  gap: 8px;
   flex-wrap: wrap;
   align-items: center;
-}
-
-.create-user input,
-.create-user select {
-  padding: 0.4rem 0.6rem;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-}
-
-.error {
-  color: #c0392b;
-  font-size: 0.875rem;
-}
-
-table {
-  width: 100%;
-  border-collapse: collapse;
-  margin-top: 0.5rem;
-}
-
-th, td {
-  text-align: left;
-  padding: 0.5rem;
-  border-bottom: 1px solid #eee;
-}
-
-th {
-  font-weight: 600;
-  color: #555;
-}
-
-button {
-  padding: 0.3rem 0.7rem;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  cursor: pointer;
-  background: white;
-}
-
-button:hover {
-  background: #f5f5f5;
 }
 </style>

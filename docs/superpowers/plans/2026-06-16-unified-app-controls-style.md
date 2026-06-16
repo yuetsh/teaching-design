@@ -61,7 +61,9 @@ import { mount } from '@vue/test-utils'
 import { describe, expect, it, vi } from 'vitest'
 import LoginPage from './LoginPage.vue'
 
-const login = vi.fn()
+const { login } = vi.hoisted(() => ({
+  login: vi.fn(),
+}))
 
 vi.mock('../composables/useAuth', () => ({
   useAuth: () => ({ login }),
@@ -89,8 +91,10 @@ import { flushPromises, mount } from '@vue/test-utils'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import AdminPage from './AdminPage.vue'
 
-const authedFetch = vi.fn()
-const logout = vi.fn()
+const { authedFetch, logout } = vi.hoisted(() => ({
+  authedFetch: vi.fn(),
+  logout: vi.fn(),
+}))
 
 vi.mock('../composables/useAuth', () => ({
   authedFetch: (...args: unknown[]) => authedFetch(...args),
@@ -286,6 +290,7 @@ Expected: Still FAIL because component templates have not been updated yet.
 - Modify: `src/components/LoginPage.vue`
 - Modify: `src/components/BookListPage.vue`
 - Modify: `src/components/AdminPage.vue`
+- Modify: `src/style.css`
 
 - [ ] **Step 1: Update LoginPage template classes**
 
@@ -356,7 +361,11 @@ In `src/components/BookListPage.vue`:
 
 Delete the scoped style block from `src/components/BookListPage.vue` because `.app-page-header` and `.app-page-actions` replace its rules.
 
-- [ ] **Step 5: Update AdminPage template classes**
+- [ ] **Step 5: Remove old BookListPage global control rules**
+
+In `src/style.css`, remove the `.book-list-page` block and remove `.book-list-create input`, `.book-list-item input`, `.book-list-create button`, and `.book-list-item button` from the global book-list selectors. Keep the `.dialog input` rule and keep the book-list layout rules such as `.book-list`, `.book-list-item`, `.book-list-name`, and `.book-list-meta`.
+
+- [ ] **Step 6: Update AdminPage template classes**
 
 In `src/components/AdminPage.vue`:
 
@@ -372,7 +381,7 @@ In `src/components/AdminPage.vue`:
 - Add `data-testid="delete-user-u1"` pattern by rendering ``:data-testid="`delete-user-${u.id}`"`` on each delete button.
 - Add `class="ui-button ui-button--danger"` to each delete button.
 
-- [ ] **Step 6: Replace AdminPage scoped styles**
+- [ ] **Step 7: Replace AdminPage scoped styles**
 
 Replace the scoped style block in `src/components/AdminPage.vue` with:
 
@@ -402,7 +411,7 @@ Replace the scoped style block in `src/components/AdminPage.vue` with:
 </style>
 ```
 
-- [ ] **Step 7: Run focused tests**
+- [ ] **Step 8: Run focused tests**
 
 Run:
 

@@ -127,4 +127,23 @@ describe('BookListPage', () => {
     expect(booksApi.deleteBook).not.toHaveBeenCalled()
     expect(wrapper.text()).toContain('Web 前端开发')
   })
+
+  it('uses shared app control classes for actions', async () => {
+    vi.mocked(booksApi.listBooks).mockResolvedValue([
+      { id: 'b1', name: 'Web 前端开发', updatedAt: '2026-01-01T00:00:00.000Z', lessonCount: 0 },
+    ])
+
+    const wrapper = mount(BookListPage)
+    await flushPromises()
+
+    expect(wrapper.get('form.book-list-create input').classes()).toContain('ui-field')
+    expect(wrapper.get('form.book-list-create button[type="submit"]').classes()).toEqual(
+      expect.arrayContaining(['ui-button', 'ui-button--primary']),
+    )
+    expect(wrapper.get('button[data-testid="open-b1"]').classes()).toContain('ui-button')
+    expect(wrapper.get('button[data-testid="rename-b1"]').classes()).toContain('ui-button')
+    expect(wrapper.get('button[data-testid="delete-b1"]').classes()).toEqual(
+      expect.arrayContaining(['ui-button', 'ui-button--danger']),
+    )
+  })
 })
