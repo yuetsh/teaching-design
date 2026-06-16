@@ -227,8 +227,15 @@ export function useTeachingBook(bookId: string): TeachingBookStore {
       }
     }
 
+    const abortController = new AbortController()
+
     async function runWorker(): Promise<void> {
-      while (!firstError && !options.isCancelled?.()) {
+      while (!firstError) {
+        if (options.isCancelled?.()) {
+          abortController.abort()
+          return
+        }
+
         const index = nextStartIndex
         if (index >= topics.length) return
 
@@ -237,12 +244,13 @@ export function useTeachingBook(bookId: string): TeachingBookStore {
         options.onTopicStart?.(topic)
 
         try {
-          const result = await booksApi.generateLesson(topic)
+          const result = await booksApi.generateLesson(topic, abortController.signal)
           results[index] = removeGeneratedAdditionalContent(
             parseTeachingDesign(result.filename, result.markdown),
           )
           appendReadyLessons()
         } catch (error) {
+          if (error instanceof Error && error.name === 'AbortError') return
           firstError = error instanceof Error ? error.message : '生成失败。'
         }
       }

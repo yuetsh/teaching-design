@@ -50,8 +50,8 @@ export function deleteBook(id: string): Promise<{ ok: true }> {
   return authedFetch(`/api/books/${id}`, { method: 'DELETE' })
 }
 
-export function generateLesson(topic: string): Promise<GenerateResult> {
-  return authedFetch('/api/generate', { method: 'POST', body: JSON.stringify({ topic }) })
+export function generateLesson(topic: string, signal?: AbortSignal): Promise<GenerateResult> {
+  return authedFetch('/api/generate', { method: 'POST', body: JSON.stringify({ topic }), signal })
 }
 
 export function generateOutline(theme: string): Promise<{ titles: string[] }> {
