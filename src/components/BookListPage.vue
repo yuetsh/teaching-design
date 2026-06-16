@@ -103,18 +103,26 @@ async function removeBook(book: BookSummary): Promise<void> {
 </script>
 
 <template>
-  <div class="book-list-page">
-    <div class="page-header">
+  <div class="book-list-page app-page">
+    <div class="app-page-header">
       <h1>教学设计</h1>
-      <div class="header-actions">
-        <button v-if="user?.role === 'admin'" type="button" @click="emit('admin')">用户管理</button>
-        <button type="button" @click="logout">退出登录</button>
+      <div class="app-page-actions">
+        <button v-if="user?.role === 'admin'" class="ui-button" type="button" @click="emit('admin')">
+          用户管理
+        </button>
+        <button class="ui-button" type="button" @click="logout">退出登录</button>
       </div>
     </div>
 
     <form class="book-list-create" @submit.prevent="createBook">
-      <input v-model="newBookName" type="text" placeholder="新整本名称" aria-label="新整本名称" />
-      <button type="submit">新建整本</button>
+      <input
+        v-model="newBookName"
+        class="ui-field"
+        type="text"
+        placeholder="新整本名称"
+        aria-label="新整本名称"
+      />
+      <button class="ui-button ui-button--primary" type="submit">新建整本</button>
     </form>
 
     <p v-if="actionError" class="app-notice app-notice--error" role="alert">
@@ -135,37 +143,37 @@ async function removeBook(book: BookSummary): Promise<void> {
       <ul v-else class="book-list">
         <li v-for="book in books" :key="book.id" class="book-list-item">
           <template v-if="renamingId === book.id">
-            <input v-model="renameValue" type="text" aria-label="整本名称" />
-            <button type="button" :data-testid="`confirm-rename-${book.id}`" @click="confirmRename">保存</button>
-            <button type="button" @click="cancelRename">取消</button>
+            <input v-model="renameValue" class="ui-field" type="text" aria-label="整本名称" />
+            <button
+              class="ui-button"
+              type="button"
+              :data-testid="`confirm-rename-${book.id}`"
+              @click="confirmRename"
+            >
+              保存
+            </button>
+            <button class="ui-button" type="button" @click="cancelRename">取消</button>
           </template>
           <template v-else>
             <span class="book-list-name">{{ book.name }}</span>
             <span class="book-list-meta">更新于 {{ formatCstUpdatedAt(book.updatedAt) }} · {{ book.lessonCount }} 课</span>
-            <button type="button" :data-testid="`open-${book.id}`" @click="emit('open', book.id)">打开</button>
-            <button type="button" :data-testid="`rename-${book.id}`" @click="startRename(book)">重命名</button>
-            <button type="button" :data-testid="`delete-${book.id}`" @click="removeBook(book)">删除</button>
+            <button class="ui-button" type="button" :data-testid="`open-${book.id}`" @click="emit('open', book.id)">
+              打开
+            </button>
+            <button class="ui-button" type="button" :data-testid="`rename-${book.id}`" @click="startRename(book)">
+              重命名
+            </button>
+            <button
+              class="ui-button ui-button--danger"
+              type="button"
+              :data-testid="`delete-${book.id}`"
+              @click="removeBook(book)"
+            >
+              删除
+            </button>
           </template>
         </li>
       </ul>
     </template>
   </div>
 </template>
-
-<style scoped>
-.page-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 1rem;
-}
-
-.page-header h1 {
-  margin: 0;
-}
-
-.header-actions {
-  display: flex;
-  gap: 0.5rem;
-}
-</style>

@@ -33,6 +33,7 @@ async function handleSubmit(): Promise<void> {
         <label for="username">用户名</label>
         <input
           id="username"
+          class="ui-field"
           v-model="username"
           type="text"
           autocomplete="username"
@@ -43,14 +44,19 @@ async function handleSubmit(): Promise<void> {
         <label for="password">密码</label>
         <input
           id="password"
+          class="ui-field"
           v-model="password"
           type="password"
           autocomplete="current-password"
           :disabled="loading"
         />
       </div>
-      <p v-if="error" class="error">{{ error }}</p>
-      <button type="submit" :disabled="loading || !username || !password">
+      <p v-if="error" class="ui-error">{{ error }}</p>
+      <button
+        class="ui-button ui-button--primary"
+        type="submit"
+        :disabled="loading || !username || !password"
+      >
         {{ loading ? '登录中…' : '登录' }}
       </button>
     </form>
@@ -63,66 +69,37 @@ async function handleSubmit(): Promise<void> {
   align-items: center;
   justify-content: center;
   min-height: 100vh;
-  background: #f5f5f5;
+  background: #edf0f2;
+  padding: 24px;
 }
 
 .login-form {
-  background: white;
-  padding: 2rem;
-  border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  width: 320px;
+  width: min(100%, 340px);
   display: flex;
   flex-direction: column;
-  gap: 1rem;
+  gap: 16px;
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  box-shadow: 0 4px 18px rgba(32, 42, 51, 0.12);
+  padding: 24px;
 }
 
 .login-form h1 {
   margin: 0;
-  font-size: 1.5rem;
+  color: var(--green-700);
+  font-size: 24px;
   text-align: center;
 }
 
 .field {
   display: flex;
   flex-direction: column;
-  gap: 0.25rem;
+  gap: 6px;
 }
 
 .field label {
-  font-size: 0.875rem;
-  color: #555;
-}
-
-.field input {
-  padding: 0.5rem;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  font-size: 1rem;
-}
-
-.field input:disabled {
-  background: #f5f5f5;
-}
-
-.error {
-  color: #c0392b;
-  font-size: 0.875rem;
-  margin: 0;
-}
-
-button[type='submit'] {
-  padding: 0.6rem;
-  background: #2c3e50;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  font-size: 1rem;
-  cursor: pointer;
-}
-
-button[type='submit']:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
+  color: var(--muted);
+  font-size: 14px;
 }
 </style>
