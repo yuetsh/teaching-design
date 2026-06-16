@@ -733,6 +733,7 @@ table {
   border: 1px solid var(--line);
   border-radius: 6px;
   padding: 8px 12px;
+  width: 100%;
 }
 
 .book-list {

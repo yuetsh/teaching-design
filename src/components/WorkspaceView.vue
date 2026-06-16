@@ -248,6 +248,7 @@ function closeFixDialog(): void {
         :total="batchTotal"
         :current-topic="batchCurrentTopic"
         :error="batchError"
+        :default-theme="bookName"
         @start="handleBatchStart"
         @cancel="handleBatchCancel"
         @close="closeBatchDialog"

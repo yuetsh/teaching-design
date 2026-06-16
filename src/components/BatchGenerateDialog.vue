@@ -10,6 +10,7 @@ const props = defineProps<{
   total: number
   currentTopic: string
   error: string | null
+  defaultTheme?: string
 }>()
 
 const emit = defineEmits<{
@@ -19,7 +20,7 @@ const emit = defineEmits<{
 }>()
 
 const phase = ref<Phase>('theme')
-const theme = ref('')
+const theme = ref(props.defaultTheme ?? '')
 const outlineText = ref('')
 const outlineError = ref<string | null>(null)
 
@@ -61,7 +62,7 @@ function handleStart(): void {
 
 function handleClose(): void {
   phase.value = 'theme'
-  theme.value = ''
+  theme.value = props.defaultTheme ?? ''
   outlineText.value = ''
   outlineError.value = null
   emit('close')
