@@ -2,6 +2,9 @@
 FROM oven/bun:1 AS builder
 WORKDIR /app
 
+ARG BUN_REGISTRY=https://registry.npmmirror.com
+ENV BUN_CONFIG_REGISTRY=${BUN_REGISTRY}
+
 COPY package.json bun.lock ./
 RUN bun install --frozen-lockfile
 
@@ -11,6 +14,9 @@ RUN bun run build
 # Production runtime
 FROM oven/bun:1-slim AS runner
 WORKDIR /app
+
+ARG BUN_REGISTRY=https://registry.npmmirror.com
+ENV BUN_CONFIG_REGISTRY=${BUN_REGISTRY}
 
 COPY package.json bun.lock ./
 RUN bun install --frozen-lockfile --production
