@@ -1,6 +1,6 @@
 import { flushPromises, mount } from '@vue/test-utils'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { createEmptyBook } from '../domain/teachingDesign'
+import { createEmptyBook } from '../../shared/domain/teachingDesign'
 import * as booksApi from '../services/booksApi'
 import BookListPage from './BookListPage.vue'
 

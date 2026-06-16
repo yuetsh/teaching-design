@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it } from 'bun:test'
 import type { Database } from 'bun:sqlite'
 import { Hono } from 'hono'
-import { createEmptyBook, createEmptyTeachingDesign } from '../../src/domain/teachingDesign'
+import { createEmptyBook, createEmptyTeachingDesign } from '../../shared/domain/teachingDesign'
 import { openDb } from '../db'
 import { createBooksRouter } from './books'
 

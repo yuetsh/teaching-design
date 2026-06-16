@@ -1,5 +1,5 @@
 import JSZip from 'jszip'
-import type { TeachingDesign } from '../domain/teachingDesign'
+import type { TeachingDesign } from '../../shared/domain/teachingDesign'
 import { writeTeachingDesignMarkdown } from './markdownWriter'
 
 export async function createBookZip(designs: readonly TeachingDesign[]): Promise<Blob> {

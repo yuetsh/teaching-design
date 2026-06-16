@@ -2,7 +2,7 @@ import { flushPromises, mount } from '@vue/test-utils'
 import { computed } from 'vue'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import App from './App.vue'
-import { createEmptyBook } from './domain/teachingDesign'
+import { createEmptyBook } from '../shared/domain/teachingDesign'
 import * as booksApi from './services/booksApi'
 
 vi.mock('./services/booksApi')

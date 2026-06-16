@@ -1,6 +1,6 @@
 import { flushPromises } from '@vue/test-utils'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { createEmptyBook, createEmptyTeachingDesign, type TeachingBook } from '../domain/teachingDesign'
+import { createEmptyBook, createEmptyTeachingDesign, type TeachingBook } from '../../shared/domain/teachingDesign'
 import * as booksApi from '../services/booksApi'
 import { useTeachingBook } from './useTeachingBook'
 

@@ -1,4 +1,4 @@
-import type { TeachingDesign } from '../domain/teachingDesign'
+import type { TeachingDesign } from '../../shared/domain/teachingDesign'
 
 function escapeCell(value: string): string {
   return value

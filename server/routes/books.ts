@@ -1,6 +1,6 @@
 import type { Database } from 'bun:sqlite'
 import { Hono } from 'hono'
-import type { TeachingBook } from '../../src/domain/teachingDesign'
+import type { TeachingBook } from '../../shared/domain/teachingDesign'
 import { createBook, deleteBook, getBook, listBooks, renameBook, saveBookData } from '../db'
 
 export function createBooksRouter(db: Database): Hono {

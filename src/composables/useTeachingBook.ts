@@ -4,7 +4,7 @@ import {
   type DesignId,
   type TeachingBook,
   type TeachingDesign,
-} from '../domain/teachingDesign'
+} from '../../shared/domain/teachingDesign'
 import * as booksApi from '../services/booksApi'
 import { parseTeachingDesign } from '../services/markdownParser'
 import { sortFilesNaturally } from '../services/naturalSort'

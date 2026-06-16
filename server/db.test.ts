@@ -2,7 +2,7 @@ import { existsSync, rmSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { afterEach, describe, expect, it, setSystemTime } from 'bun:test'
-import { createEmptyBook, createEmptyTeachingDesign } from '../src/domain/teachingDesign'
+import { createEmptyBook, createEmptyTeachingDesign } from '../shared/domain/teachingDesign'
 import {
   createBook, deleteBook, getBook, listBooks, openDb, renameBook, saveBookData,
   createUser, findUserByUsername, findUserById, listUsers, deleteUser, updateUserPasswordHash,

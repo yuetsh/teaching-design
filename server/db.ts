@@ -1,5 +1,5 @@
 import { Database } from 'bun:sqlite'
-import { createEmptyBook, type TeachingBook } from '../src/domain/teachingDesign'
+import { createEmptyBook, type TeachingBook } from '../shared/domain/teachingDesign'
 
 export interface BookSummary {
   id: string

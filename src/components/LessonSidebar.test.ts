@@ -1,6 +1,6 @@
 import { mount } from '@vue/test-utils'
 import { describe, expect, it } from 'vitest'
-import { createEmptyTeachingDesign } from '../domain/teachingDesign'
+import { createEmptyTeachingDesign } from '../../shared/domain/teachingDesign'
 import LessonSidebar from './LessonSidebar.vue'
 
 describe('LessonSidebar', () => {

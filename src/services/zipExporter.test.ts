@@ -1,6 +1,6 @@
 import JSZip from 'jszip'
 import { describe, expect, it } from 'vitest'
-import { createEmptyTeachingDesign } from '../domain/teachingDesign'
+import { createEmptyTeachingDesign } from '../../shared/domain/teachingDesign'
 import { createBookZip } from './zipExporter'
 
 describe('createBookZip', () => {

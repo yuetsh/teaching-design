@@ -1,4 +1,4 @@
-import type { TeachingBook } from '../domain/teachingDesign'
+import type { TeachingBook } from '../../shared/domain/teachingDesign'
 import { authedFetch } from '../composables/useAuth'
 
 export interface BookSummary {

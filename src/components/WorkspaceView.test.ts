@@ -1,6 +1,6 @@
 import { flushPromises, mount } from '@vue/test-utils'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { createEmptyBook, createEmptyTeachingDesign } from '../domain/teachingDesign'
+import { createEmptyBook, createEmptyTeachingDesign } from '../../shared/domain/teachingDesign'
 import * as booksApi from '../services/booksApi'
 import * as zipExporter from '../services/zipExporter'
 import BatchGenerateDialog from './BatchGenerateDialog.vue'

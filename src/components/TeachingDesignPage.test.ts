@@ -1,6 +1,6 @@
 import { mount } from '@vue/test-utils'
 import { describe, expect, it } from 'vitest'
-import { createEmptyTeachingDesign, type TeachingDesign } from '../domain/teachingDesign'
+import { createEmptyTeachingDesign, type TeachingDesign } from '../../shared/domain/teachingDesign'
 import TeachingDesignPage from './TeachingDesignPage.vue'
 
 describe('TeachingDesignPage', () => {

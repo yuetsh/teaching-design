@@ -4,7 +4,7 @@ import {
   type ParseWarning,
   type TeachingDesign,
   type TeachingStep,
-} from '../domain/teachingDesign'
+} from '../../shared/domain/teachingDesign'
 import { extractMarkdownTable } from './markdownTable'
 
 const BR = /<br\s*\/?>/gi

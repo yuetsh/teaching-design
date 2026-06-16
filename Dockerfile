@@ -22,6 +22,7 @@ COPY package.json bun.lock ./
 RUN bun install --frozen-lockfile --production
 
 COPY server/ ./server/
+COPY shared/ ./shared/
 COPY --from=builder /app/dist ./dist/
 
 RUN mkdir -p data
