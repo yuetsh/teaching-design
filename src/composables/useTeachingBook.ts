@@ -28,6 +28,7 @@ export interface ImportResult {
 
 export interface TeachingBookStore {
   book: Ref<TeachingBook>
+  bookName: Ref<string>
   loadStatus: Ref<LoadStatus>
   loadError: Ref<string | null>
   saveStatus: Ref<SaveStatus>
@@ -44,10 +45,12 @@ export interface TeachingBookStore {
   updateDesign: (id: DesignId, updater: (design: TeachingDesign) => void) => void
   clearBook: () => void
   generateLesson: (topic: string) => Promise<GenerateLessonResult>
+  regenerateLesson: (id: DesignId) => Promise<GenerateLessonResult>
 }
 
 export function useTeachingBook(bookId: string): TeachingBookStore {
   const book = ref<TeachingBook>(createEmptyBook()) as Ref<TeachingBook>
+  const bookName = ref('')
   const loadStatus = ref<LoadStatus>('loading')
   const loadError = ref<string | null>(null)
   const saveStatus = ref<SaveStatus>('idle')
@@ -113,6 +116,7 @@ export function useTeachingBook(bookId: string): TeachingBookStore {
     try {
       const record = await booksApi.getBook(bookId)
       book.value = record.data
+      bookName.value = record.name
       await nextTick()
       loadStatus.value = 'loaded'
     } catch (error) {
@@ -245,8 +249,31 @@ export function useTeachingBook(bookId: string): TeachingBookStore {
     }
   }
 
+  async function regenerateLesson(id: DesignId): Promise<GenerateLessonResult> {
+    const existing = book.value.designs.find((d) => d.id === id)
+    if (!existing) return { ok: false, message: '找不到该教案。' }
+
+    const topic = existing.originalFilename.replace(/\.md$/i, '')
+    try {
+      const result = await booksApi.generateLesson(topic)
+      const newDesign = parseTeachingDesign(result.filename, result.markdown)
+      const index = book.value.designs.findIndex((d) => d.id === id)
+      if (index !== -1) {
+        book.value.designs.splice(index, 1, newDesign)
+        if (book.value.selectedId === id) {
+          book.value.selectedId = newDesign.id
+        }
+      }
+      touch()
+      return { ok: true }
+    } catch (error) {
+      return { ok: false, message: error instanceof Error ? error.message : '修复失败。' }
+    }
+  }
+
   return {
     book,
+    bookName,
     loadStatus,
     loadError,
     saveStatus,
@@ -263,5 +290,6 @@ export function useTeachingBook(bookId: string): TeachingBookStore {
     updateDesign,
     clearBook,
     generateLesson,
+    regenerateLesson,
   }
 }
