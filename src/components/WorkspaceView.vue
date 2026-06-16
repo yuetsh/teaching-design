@@ -4,6 +4,8 @@ import { type DuplicateStrategy, useTeachingBook } from '../composables/useTeach
 import type { TeachingDesign } from '../domain/teachingDesign'
 import { createBookZip, downloadBlob } from '../services/zipExporter'
 import A4Workspace from './A4Workspace.vue'
+import BatchGenerateDialog from './BatchGenerateDialog.vue'
+import FixBrokenDialog from './FixBrokenDialog.vue'
 import GenerateLessonDialog from './GenerateLessonDialog.vue'
 import ImportConflictDialog from './ImportConflictDialog.vue'
 import LessonSidebar from './LessonSidebar.vue'
@@ -17,6 +19,7 @@ defineEmits<{ back: [] }>()
 
 const {
   book,
+  bookName,
   loadStatus,
   loadError,
   saveStatus,
@@ -33,6 +36,7 @@ const {
   updateDesign,
   clearBook,
   generateLesson,
+  regenerateLesson,
 } = useTeachingBook(props.bookId)
 
 const pendingFiles = ref<File[]>([])
@@ -43,6 +47,22 @@ const uploadRef = ref<InstanceType<typeof UploadDropzone> | null>(null)
 const showGenerateDialog = ref(false)
 const generateLoading = ref(false)
 const generateError = ref<string | null>(null)
+
+const showBatchDialog = ref(false)
+const batchRunning = ref(false)
+const batchDone = ref(0)
+const batchTotal = ref(0)
+const batchCurrentTopic = ref('')
+const batchError = ref<string | null>(null)
+const batchCancelled = ref(false)
+
+const showFixDialog = ref(false)
+const fixRunning = ref(false)
+const fixDone = ref(0)
+const fixTotal = ref(0)
+const fixCurrentTopic = ref('')
+const fixError = ref<string | null>(null)
+const fixCancelled = ref(false)
 
 async function runImport(files: File[], strategy: DuplicateStrategy): Promise<void> {
   const result = await importFiles(files, strategy)
@@ -76,7 +96,10 @@ function triggerUpload(): void {
 }
 
 function handlePrint(): void {
+  const prev = document.title
+  document.title = bookName.value || prev
   window.print()
+  document.title = prev
 }
 
 async function handleExport(): Promise<void> {
@@ -123,6 +146,75 @@ function cancelGenerate(): void {
   showGenerateDialog.value = false
   generateError.value = null
 }
+
+async function handleBatchStart(topics: string[]): Promise<void> {
+  batchRunning.value = true
+  batchCancelled.value = false
+  batchDone.value = 0
+  batchTotal.value = topics.length
+  batchError.value = null
+
+  for (const topic of topics) {
+    if (batchCancelled.value) break
+    batchCurrentTopic.value = topic
+    const result = await generateLesson(topic)
+    if (!result.ok) {
+      batchError.value = result.message
+      break
+    }
+    batchDone.value++
+  }
+
+  batchRunning.value = false
+}
+
+function handleBatchCancel(): void {
+  batchCancelled.value = true
+}
+
+function closeBatchDialog(): void {
+  showBatchDialog.value = false
+  batchDone.value = 0
+  batchTotal.value = 0
+  batchError.value = null
+}
+
+function openFixDialog(): void {
+  fixTotal.value = book.value.designs.filter((d) => d.warnings.length > 0).length
+  fixDone.value = 0
+  fixError.value = null
+  showFixDialog.value = true
+}
+
+async function handleFixStart(): Promise<void> {
+  const broken = book.value.designs.filter((d) => d.warnings.length > 0)
+  fixCancelled.value = false
+  fixRunning.value = true
+
+  for (const lesson of broken) {
+    if (fixCancelled.value) break
+    fixCurrentTopic.value = lesson.originalFilename.replace(/\.md$/i, '')
+    const result = await regenerateLesson(lesson.id)
+    if (!result.ok) {
+      fixError.value = result.message
+      break
+    }
+    fixDone.value++
+  }
+
+  fixRunning.value = false
+}
+
+function handleFixCancel(): void {
+  fixCancelled.value = true
+}
+
+function closeFixDialog(): void {
+  showFixDialog.value = false
+  fixDone.value = 0
+  fixTotal.value = 0
+  fixError.value = null
+}
 </script>
 
 <template>
@@ -149,6 +241,28 @@ function cancelGenerate(): void {
         @submit="handleGenerateSubmit"
         @cancel="cancelGenerate"
       />
+      <BatchGenerateDialog
+        v-if="showBatchDialog"
+        :running="batchRunning"
+        :done="batchDone"
+        :total="batchTotal"
+        :current-topic="batchCurrentTopic"
+        :error="batchError"
+        @start="handleBatchStart"
+        @cancel="handleBatchCancel"
+        @close="closeBatchDialog"
+      />
+      <FixBrokenDialog
+        v-if="showFixDialog"
+        :running="fixRunning"
+        :done="fixDone"
+        :total="fixTotal"
+        :current-topic="fixCurrentTopic"
+        :error="fixError"
+        @start="handleFixStart"
+        @cancel="handleFixCancel"
+        @close="closeFixDialog"
+      />
 
       <p v-if="errorMessage" class="app-notice app-notice--error" role="alert">
         {{ errorMessage }}
@@ -165,6 +279,8 @@ function cancelGenerate(): void {
         @back="$emit('back')"
         @upload="triggerUpload"
         @generate="openGenerateDialog"
+        @batch-generate="showBatchDialog = true"
+        @fix-broken="openFixDialog"
         @print="handlePrint"
         @export="handleExport"
         @clear="handleClear"
@@ -192,7 +308,7 @@ function cancelGenerate(): void {
         <UploadDropzone ref="uploadRef" compact class="visually-hidden" @files="handleFiles" />
       </template>
 
-      <PrintBook :cover="book.cover" :designs="book.designs" />
+      <PrintBook :designs="book.designs" />
     </template>
   </div>
 </template>

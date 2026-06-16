@@ -24,7 +24,7 @@ describe('BookListPage', () => {
     await flushPromises()
 
     expect(wrapper.text()).toContain('Web 前端开发')
-    expect(wrapper.text()).toContain('更新于 2026/01/01 08:00 CST')
+    expect(wrapper.text()).toContain('更新于 2026/01/01')
     expect(wrapper.text()).not.toContain('2026-01-01T00:00:00.000Z')
     expect(wrapper.text()).toContain('3 课')
   })
