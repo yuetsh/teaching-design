@@ -82,10 +82,10 @@ input {
 }
 
 .ui-button:disabled {
-  color: var(--muted);
+  background: #f4f6f7;
+  color: #43515c;
   border-color: var(--line);
   cursor: not-allowed;
-  opacity: 0.6;
 }
 
 .ui-button--primary {
@@ -195,10 +195,10 @@ input {
 }
 
 .workspace-toolbar button:disabled {
-  color: var(--muted);
+  background: #f4f6f7;
+  color: #43515c;
   border-color: var(--line);
   cursor: not-allowed;
-  opacity: 0.6;
 }
 
 .workspace-toolbar-count,

@@ -14,6 +14,7 @@ import UploadDropzone from './UploadDropzone.vue'
 import WorkspaceToolbar from './WorkspaceToolbar.vue'
 
 const BATCH_GENERATE_CONCURRENCY = 3
+const DEFAULT_EXPORT_ZIP_NAME = 'teaching-design-book'
 
 const props = defineProps<{ bookId: string }>()
 
@@ -104,10 +105,15 @@ function handlePrint(): void {
   document.title = prev
 }
 
+function createExportZipFilename(name: string): string {
+  const stem = name.trim().replace(/[\\/:*?"<>|]/g, '_')
+  return `${stem || DEFAULT_EXPORT_ZIP_NAME}.zip`
+}
+
 async function handleExport(): Promise<void> {
   try {
     const blob = await createBookZip(book.value.designs)
-    downloadBlob(blob, 'teaching-design-book.zip')
+    downloadBlob(blob, createExportZipFilename(bookName.value))
   } catch {
     errorMessage.value = '导出失败，请重试。'
   }

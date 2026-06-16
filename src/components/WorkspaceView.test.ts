@@ -2,11 +2,13 @@ import { flushPromises, mount } from '@vue/test-utils'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { createEmptyBook, createEmptyTeachingDesign } from '../domain/teachingDesign'
 import * as booksApi from '../services/booksApi'
+import * as zipExporter from '../services/zipExporter'
 import BatchGenerateDialog from './BatchGenerateDialog.vue'
 import GenerateLessonDialog from './GenerateLessonDialog.vue'
 import WorkspaceView from './WorkspaceView.vue'
 
 vi.mock('../services/booksApi')
+vi.mock('../services/zipExporter')
 
 function mockBook(data = createEmptyBook()): void {
   vi.mocked(booksApi.getBook).mockResolvedValue({
@@ -188,5 +190,21 @@ describe('WorkspaceView', () => {
     await wrapper.get('[data-testid="clear"]').trigger('click')
 
     expect(wrapper.text()).toContain('点击或拖拽上传')
+  })
+
+  it('downloads the exported zip with the book name', async () => {
+    const data = createEmptyBook()
+    data.designs.push(createEmptyTeachingDesign('1.md'))
+    const blob = new Blob(['zip'])
+    mockBook(data)
+    vi.mocked(zipExporter.createBookZip).mockResolvedValue(blob)
+
+    const wrapper = mount(WorkspaceView, { props: { bookId: 'b1' } })
+    await flushPromises()
+
+    await wrapper.get('[data-testid="export"]').trigger('click')
+    await flushPromises()
+
+    expect(zipExporter.downloadBlob).toHaveBeenCalledWith(blob, '示例整本.zip')
   })
 })
