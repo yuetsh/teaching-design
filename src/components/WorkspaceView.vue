@@ -1,16 +1,14 @@
 <script setup lang="ts">
 import { ref } from 'vue'
-import { type DuplicateStrategy, useTeachingBook } from '../composables/useTeachingBook'
+import { useTeachingBook } from '../composables/useTeachingBook'
 import type { TeachingDesign } from '../../shared/domain/teachingDesign'
 import { createBookZip, downloadBlob } from '../services/zipExporter'
 import A4Workspace from './A4Workspace.vue'
 import BatchGenerateDialog from './BatchGenerateDialog.vue'
 import FixBrokenDialog from './FixBrokenDialog.vue'
 import GenerateLessonDialog from './GenerateLessonDialog.vue'
-import ImportConflictDialog from './ImportConflictDialog.vue'
 import LessonSidebar from './LessonSidebar.vue'
 import PrintBook from './PrintBook.vue'
-import UploadDropzone from './UploadDropzone.vue'
 import WorkspaceToolbar from './WorkspaceToolbar.vue'
 
 const BATCH_GENERATE_CONCURRENCY = 3
@@ -30,8 +28,6 @@ const {
   selectedDesign,
   hasDesigns,
   warningCount,
-  importFiles,
-  detectDuplicates,
   selectPage,
   moveDesign,
   removeDesign,
@@ -42,10 +38,7 @@ const {
   regenerateLesson,
 } = useTeachingBook(props.bookId)
 
-const pendingFiles = ref<File[]>([])
-const duplicateNames = ref<string[]>([])
 const errorMessage = ref<string | null>(null)
-const uploadRef = ref<InstanceType<typeof UploadDropzone> | null>(null)
 
 const showGenerateDialog = ref(false)
 const generateLoading = ref(false)
@@ -66,37 +59,6 @@ const fixTotal = ref(0)
 const fixCurrentTopic = ref('')
 const fixError = ref<string | null>(null)
 const fixCancelled = ref(false)
-
-async function runImport(files: File[], strategy: DuplicateStrategy): Promise<void> {
-  const result = await importFiles(files, strategy)
-  if (result.failed.length > 0) {
-    errorMessage.value = `${result.failed.length} 个文件导入失败：${result.failed
-      .map((entry) => `${entry.filename}（${entry.message}）`)
-      .join('、')}`
-  }
-}
-
-async function handleFiles(files: File[]): Promise<void> {
-  const duplicates = detectDuplicates(files)
-  if (duplicates.length > 0) {
-    pendingFiles.value = files
-    duplicateNames.value = duplicates
-    return
-  }
-  await runImport(files, 'keep')
-}
-
-async function resolveConflict(strategy: DuplicateStrategy | 'cancel'): Promise<void> {
-  const files = pendingFiles.value
-  pendingFiles.value = []
-  duplicateNames.value = []
-  if (strategy === 'cancel') return
-  await runImport(files, strategy)
-}
-
-function triggerUpload(): void {
-  uploadRef.value?.openPicker()
-}
 
 function handlePrint(): void {
   const prev = document.title
@@ -239,13 +201,6 @@ function closeFixDialog(): void {
     </div>
 
     <template v-else>
-      <ImportConflictDialog
-        v-if="duplicateNames.length > 0"
-        :duplicates="duplicateNames"
-        @replace="resolveConflict('replace')"
-        @keep="resolveConflict('keep')"
-        @cancel="resolveConflict('cancel')"
-      />
       <GenerateLessonDialog
         v-if="showGenerateDialog"
         :loading="generateLoading"
@@ -290,7 +245,6 @@ function closeFixDialog(): void {
         :warning-count="warningCount"
         :save-status="saveStatus"
         @back="$emit('back')"
-        @upload="triggerUpload"
         @generate="openGenerateDialog"
         @batch-generate="showBatchDialog = true"
         @fix-broken="openFixDialog"
@@ -299,24 +253,19 @@ function closeFixDialog(): void {
         @clear="handleClear"
       />
 
-      <UploadDropzone v-if="!hasDesigns" @files="handleFiles" />
-
-      <template v-else>
-        <div class="workspace-layout">
-          <LessonSidebar
-            :designs="book.designs"
-            :selected-id="book.selectedId"
-            @select="selectPage"
-            @remove="removeDesign"
-            @move="moveDesign"
-          />
-          <A4Workspace
-            :selected-design="selectedDesign"
-            @update:design="handleDesignUpdate"
-          />
-        </div>
-        <UploadDropzone ref="uploadRef" compact class="visually-hidden" @files="handleFiles" />
-      </template>
+      <div v-if="hasDesigns" class="workspace-layout">
+        <LessonSidebar
+          :designs="book.designs"
+          :selected-id="book.selectedId"
+          @select="selectPage"
+          @remove="removeDesign"
+          @move="moveDesign"
+        />
+        <A4Workspace
+          :selected-design="selectedDesign"
+          @update:design="handleDesignUpdate"
+        />
+      </div>
 
       <PrintBook :designs="book.designs" />
     </template>

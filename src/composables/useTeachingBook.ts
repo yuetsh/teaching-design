@@ -7,11 +7,8 @@ import {
 } from '../../shared/domain/teachingDesign'
 import * as booksApi from '../services/booksApi'
 import { parseTeachingDesign } from '../services/markdownParser'
-import { sortFilesNaturally } from '../services/naturalSort'
 
 const AUTOSAVE_DELAY_MS = 300
-
-export type DuplicateStrategy = 'replace' | 'keep'
 
 export type SaveStatus = 'idle' | 'saving' | 'saved' | 'error'
 
@@ -30,12 +27,6 @@ export interface BatchGenerateLessonOptions {
   onLessonComplete?: (count: number) => void
 }
 
-export interface ImportResult {
-  imported: number
-  failed: Array<{ filename: string; message: string }>
-  duplicates: string[]
-}
-
 export interface TeachingBookStore {
   book: Ref<TeachingBook>
   bookName: Ref<string>
@@ -46,8 +37,6 @@ export interface TeachingBookStore {
   selectedDesign: Ref<TeachingDesign | null>
   hasDesigns: Ref<boolean>
   warningCount: Ref<number>
-  importFiles: (files: readonly File[], strategy: DuplicateStrategy) => Promise<ImportResult>
-  detectDuplicates: (files: readonly File[]) => string[]
   selectPage: (id: DesignId) => void
   moveDesign: (from: number, to: number) => void
   removeDesign: (id: DesignId) => void
@@ -141,64 +130,6 @@ export function useTeachingBook(bookId: string): TeachingBookStore {
   }
 
   void load()
-
-  function detectDuplicates(files: readonly File[]): string[] {
-    const existingNames = new Set(book.value.designs.map((design) => design.originalFilename))
-    return files.map((file) => file.name).filter((name) => existingNames.has(name))
-  }
-
-  async function importFiles(
-    files: readonly File[],
-    strategy: DuplicateStrategy,
-  ): Promise<ImportResult> {
-    const markdownFiles = files.filter((file) => /\.md$/i.test(file.name))
-    const failed: ImportResult['failed'] = files
-      .filter((file) => !/\.md$/i.test(file.name))
-      .map((file) => ({ filename: file.name, message: '仅支持 .md 文件。' }))
-
-    const sortedFiles = sortFilesNaturally([...markdownFiles])
-    const duplicates: string[] = []
-    let imported = 0
-
-    for (const file of sortedFiles) {
-      try {
-        const text = await file.text()
-        const design = parseTeachingDesign(file.name, text)
-
-        const existingIndex = book.value.designs.findIndex(
-          (existing) => existing.originalFilename === file.name,
-        )
-
-        if (existingIndex !== -1) {
-          duplicates.push(file.name)
-          if (strategy === 'replace') {
-            book.value.designs.splice(existingIndex, 1, design)
-          } else {
-            book.value.designs.push(design)
-          }
-        } else {
-          book.value.designs.push(design)
-        }
-
-        imported++
-      } catch (error) {
-        failed.push({
-          filename: file.name,
-          message: error instanceof Error ? error.message : '解析失败。',
-        })
-      }
-    }
-
-    if (imported > 0 && book.value.selectedId === null && book.value.designs.length > 0) {
-      book.value.selectedId = book.value.designs[0]!.id
-    }
-
-    if (imported > 0) {
-      touch()
-    }
-
-    return { imported, failed, duplicates }
-  }
 
   function selectPage(id: DesignId): void {
     book.value.selectedId = id
@@ -359,8 +290,6 @@ export function useTeachingBook(bookId: string): TeachingBookStore {
     selectedDesign,
     hasDesigns,
     warningCount,
-    importFiles,
-    detectDuplicates,
     selectPage,
     moveDesign,
     removeDesign,
