@@ -14,6 +14,12 @@ onMounted(async () => {
   await fetchMe()
 })
 
+async function handleLoginSuccess(): Promise<void> {
+  showAdmin.value = false
+  currentBookId.value = null
+  await fetchMe()
+}
+
 function openBook(id: string): void {
   currentBookId.value = id
   showAdmin.value = false
@@ -34,7 +40,7 @@ function closeAdmin(): void {
 </script>
 
 <template>
-  <LoginPage v-if="!isLoggedIn" @success="fetchMe" />
+  <LoginPage v-if="!isLoggedIn" @success="handleLoginSuccess" />
   <template v-else>
     <AdminPage v-if="showAdmin" @back="closeAdmin" />
     <WorkspaceView
