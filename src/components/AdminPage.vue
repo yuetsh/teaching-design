@@ -176,4 +176,8 @@ onMounted(loadUsers)
   flex-wrap: wrap;
   align-items: center;
 }
+
+.user-list table td .ui-button + .ui-button {
+  margin-left: 8px;
+}
 </style>
