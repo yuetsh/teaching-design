@@ -40,6 +40,12 @@
     box-shadow: none;
   }
 
+  .basic-info-table,
+  .process-table,
+  .reflection-table {
+    width: calc(100% - 1px);
+  }
+
   .process-table {
     break-inside: auto;
   }

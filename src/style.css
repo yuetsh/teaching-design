@@ -158,6 +158,19 @@ input {
   cursor: not-allowed;
 }
 
+.ui-error {
+  color: #c0392b;
+  font-size: 14px;
+  margin: 8px 0 0;
+}
+
+.ui-success {
+  color: var(--green-700);
+  font-size: 14px;
+  margin: 8px 0 0;
+}
+
+/* Tables */
 .ui-table {
   width: 100%;
   border-collapse: collapse;
@@ -187,16 +200,40 @@ input {
   background: #f8faf9;
 }
 
-.ui-error {
-  color: #c0392b;
-  font-size: 14px;
-  margin: 8px 0 0;
+table {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
 }
 
-.ui-success {
+.basic-info-table th,
+.basic-info-table td,
+.process-table th,
+.process-table td,
+.reflection-table th,
+.reflection-table td {
+  border: 1px solid var(--line);
+  padding: 6px 8px;
+  vertical-align: top;
+  text-align: left;
+}
+
+.basic-info-table th,
+.process-table th,
+.reflection-table th {
+  background: var(--green-100);
   color: var(--green-700);
-  font-size: 14px;
-  margin: 8px 0 0;
+  font-weight: 600;
+  width: 8em;
+}
+
+.process-table th {
+  width: auto;
+}
+
+.process-step-actions {
+  width: 6em;
+  text-align: center;
 }
 
 /* Toolbar */
@@ -403,37 +440,6 @@ input {
   color: var(--green-700);
 }
 
-table {
-  width: 100%;
-  border-collapse: collapse;
-  table-layout: fixed;
-}
-
-.basic-info-table th,
-.basic-info-table td,
-.process-table th,
-.process-table td,
-.reflection-table th,
-.reflection-table td {
-  border: 1px solid var(--line);
-  padding: 6px 8px;
-  vertical-align: top;
-  text-align: left;
-}
-
-.basic-info-table th,
-.process-table th,
-.reflection-table th {
-  background: var(--green-100);
-  color: var(--green-700);
-  font-weight: 600;
-  width: 8em;
-}
-
-.process-table th {
-  width: auto;
-}
-
 .objectives-cell {
   display: flex;
   flex-direction: column;
@@ -454,11 +460,6 @@ table {
 
 .process-step-name > * + * {
   margin-top: 4px;
-}
-
-.process-step-actions {
-  width: 6em;
-  text-align: center;
 }
 
 .process-step-actions button {

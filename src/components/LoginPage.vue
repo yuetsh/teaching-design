@@ -28,7 +28,7 @@ async function handleSubmit(): Promise<void> {
 <template>
   <div class="login-wrapper">
     <form class="login-form" @submit.prevent="handleSubmit">
-      <h1>教学设计</h1>
+      <h1>教学设计生成器</h1>
       <div class="field">
         <label for="username">用户名</label>
         <input
