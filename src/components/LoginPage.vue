@@ -80,7 +80,7 @@ async function handleSubmit(): Promise<void> {
   gap: 16px;
   background: #fff;
   border: 1px solid var(--line);
-  border-radius: 8px;
+  border-radius: var(--radius-lg);
   box-shadow: 0 4px 18px rgba(32, 42, 51, 0.12);
   padding: 24px;
 }
@@ -95,7 +95,7 @@ async function handleSubmit(): Promise<void> {
 .field {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: var(--space-2);
 }
 
 .field label {
