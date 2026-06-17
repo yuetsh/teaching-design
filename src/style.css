@@ -126,6 +126,15 @@ input {
   filter: brightness(0.95);
 }
 
+.ui-button:focus-visible,
+.workspace-toolbar button:focus-visible,
+.dialog-actions button:focus-visible,
+.process-step-actions button:focus-visible {
+  outline: none;
+  border-color: var(--green-600);
+  box-shadow: 0 0 0 2px rgba(45, 122, 88, 0.16);
+}
+
 .ui-field,
 .ui-select {
   border: 1px solid var(--line);
@@ -172,6 +181,10 @@ input {
 
 .ui-table tr:last-child td {
   border-bottom: none;
+}
+
+.ui-table tbody tr:hover {
+  background: #f8faf9;
 }
 
 .ui-error {
@@ -285,6 +298,11 @@ input {
   padding: 10px 12px;
   cursor: pointer;
   min-width: 0;
+  transition: background-color 0.15s ease;
+}
+
+.lesson-sidebar-item:not(.lesson-sidebar-item--active) .lesson-sidebar-select:hover {
+  background: #f4f6f7;
 }
 
 .lesson-sidebar-number {
