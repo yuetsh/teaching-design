@@ -27,3 +27,6 @@ dist-ssr
 # Backend data and secrets
 data/teaching-books.db
 .env
+
+# Brainstorming visual companion
+.superpowers/
