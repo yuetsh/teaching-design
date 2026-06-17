@@ -84,6 +84,7 @@ input {
   color: var(--green-700);
   cursor: pointer;
   white-space: nowrap;
+  transition: background-color 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
 }
 
 .ui-button:hover:not(:disabled) {
@@ -116,6 +117,13 @@ input {
 .ui-button--danger:hover:not(:disabled) {
   background: #fdecea;
   border-color: #c0392b;
+}
+
+.ui-button:active:not(:disabled),
+.workspace-toolbar button:active:not(:disabled),
+.dialog-actions button:active:not(:disabled),
+.process-step-actions button:active:not(:disabled) {
+  filter: brightness(0.95);
 }
 
 .ui-field,
@@ -197,6 +205,7 @@ input {
   padding: 6px 14px;
   color: var(--green-700);
   cursor: pointer;
+  transition: background-color 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
 }
 
 .workspace-toolbar button:hover:not(:disabled) {
@@ -442,6 +451,7 @@ table {
   font-size: 12px;
   cursor: pointer;
   color: #c0392b;
+  transition: background-color 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
 }
 
 .process-step-actions button:disabled {
@@ -484,6 +494,7 @@ table {
   background: transparent;
   resize: none;
   overflow: hidden;
+  transition: background-color 0.15s ease, border-color 0.15s ease;
 }
 
 .editable-text--multiline {
@@ -517,6 +528,7 @@ table {
   border-radius: var(--radius-sm);
   border: 1px solid transparent;
   cursor: text;
+  transition: background-color 0.15s ease, border-color 0.15s ease;
 }
 
 .markdown-preview--empty {
@@ -635,6 +647,7 @@ table {
   border-radius: var(--radius-md);
   padding: 6px 14px;
   cursor: pointer;
+  transition: background-color 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
 }
 
 .app-notice {
