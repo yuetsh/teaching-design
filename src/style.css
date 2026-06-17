@@ -725,6 +725,24 @@ table {
   }
 }
 
+@media (max-width: 600px) {
+  .workspace-toolbar {
+    height: auto;
+    flex: 0 0 auto;
+    flex-wrap: wrap;
+    padding: var(--space-2) var(--space-4);
+    gap: var(--space-2);
+  }
+
+  .workspace-toolbar button {
+    flex: 0 0 auto;
+  }
+
+  .workspace-toolbar-count {
+    flex: 1 1 100%;
+  }
+}
+
 /* Book list */
 .book-list-create {
   display: flex;
