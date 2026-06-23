@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { SaveStatus } from '../composables/useTeachingBook'
+import GenerateMenuButton from './GenerateMenuButton.vue'
 
 const props = defineProps<{
   lessonCount: number
@@ -28,8 +29,7 @@ const saveStatusLabel: Record<SaveStatus, string> = {
 <template>
   <header class="workspace-toolbar">
     <button type="button" data-testid="back" @click="$emit('back')">返回列表</button>
-    <button type="button" data-testid="batch-generate" @click="$emit('batchGenerate')">批量生成</button>
-    <button type="button" data-testid="generate" @click="$emit('generate')">生成一篇</button>
+    <GenerateMenuButton @generate="$emit('generate')" @batch-generate="$emit('batchGenerate')" />
     <button type="button" data-testid="print" :disabled="lessonCount === 0" @click="$emit('print')">打印整册</button>
     <button type="button" data-testid="export" :disabled="lessonCount === 0" @click="$emit('export')">导出 MD</button>
     <button type="button" data-testid="clear" :disabled="lessonCount === 0" @click="$emit('clear')">清空</button>

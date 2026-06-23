@@ -92,6 +92,7 @@ describe('WorkspaceView', () => {
     const wrapper = mount(WorkspaceView, { props: { bookId: 'b1' } })
     await flushPromises()
 
+    await wrapper.get('[data-testid="generate-menu-toggle"]').trigger('click')
     await wrapper.get('[data-testid="generate"]').trigger('click')
     const dialog = wrapper.getComponent(GenerateLessonDialog)
 
@@ -128,6 +129,7 @@ describe('WorkspaceView', () => {
     const wrapper = mount(WorkspaceView, { props: { bookId: 'b1' } })
     await flushPromises()
 
+    await wrapper.get('[data-testid="generate-menu-toggle"]').trigger('click')
     await wrapper.get('[data-testid="batch-generate"]').trigger('click')
     wrapper.getComponent(BatchGenerateDialog).vm.$emit('start', [
       '第一课',

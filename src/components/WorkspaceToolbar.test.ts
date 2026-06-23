@@ -14,10 +14,18 @@ describe('WorkspaceToolbar', () => {
     expect(wrapper.text()).toContain('共 3 课')
   })
 
-  it('emits generate when the generate button is clicked', async () => {
+  it('emits generate when the generate menu item is clicked', async () => {
     const wrapper = mountToolbar(3)
+    await wrapper.get('button[data-testid="generate-menu-toggle"]').trigger('click')
     await wrapper.get('button[data-testid="generate"]').trigger('click')
     expect(wrapper.emitted('generate')).toHaveLength(1)
+  })
+
+  it('emits batchGenerate when the batch-generate menu item is clicked', async () => {
+    const wrapper = mountToolbar(3)
+    await wrapper.get('button[data-testid="generate-menu-toggle"]').trigger('click')
+    await wrapper.get('button[data-testid="batch-generate"]').trigger('click')
+    expect(wrapper.emitted('batchGenerate')).toHaveLength(1)
   })
 
   it('emits back when the back button is clicked', async () => {
@@ -26,9 +34,11 @@ describe('WorkspaceToolbar', () => {
     expect(wrapper.emitted('back')).toHaveLength(1)
   })
 
-  it('keeps generate and back enabled even with no lessons', () => {
+  it('keeps the generate menu toggle and back button enabled even with no lessons', () => {
     const wrapper = mountToolbar(0)
-    expect(wrapper.get('button[data-testid="generate"]').attributes('disabled')).toBeUndefined()
+    expect(
+      wrapper.get('button[data-testid="generate-menu-toggle"]').attributes('disabled'),
+    ).toBeUndefined()
     expect(wrapper.get('button[data-testid="back"]').attributes('disabled')).toBeUndefined()
   })
 
