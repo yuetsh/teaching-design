@@ -270,12 +270,12 @@ table {
   cursor: not-allowed;
 }
 
-.generate-menu {
+.toolbar-menu {
   position: relative;
   display: inline-flex;
 }
 
-.generate-menu-list {
+.toolbar-menu-list {
   position: absolute;
   top: 100%;
   left: 0;
@@ -290,7 +290,7 @@ table {
   z-index: 10;
 }
 
-.generate-menu-list button {
+.toolbar-menu-list button {
   display: block;
   width: 100%;
   border: none;
@@ -302,7 +302,7 @@ table {
   cursor: pointer;
 }
 
-.generate-menu-list button:hover {
+.toolbar-menu-list button:hover {
   background: var(--green-100);
 }
 
@@ -775,7 +775,7 @@ table {
     flex: 0 0 auto;
   }
 
-  .workspace-toolbar .generate-menu {
+  .workspace-toolbar .toolbar-menu {
     flex: 0 0 auto;
   }
 
