@@ -42,10 +42,25 @@ describe('WorkspaceToolbar', () => {
     expect(wrapper.get('button[data-testid="back"]').attributes('disabled')).toBeUndefined()
   })
 
-  it('disables print, export and clear when there are no lessons', () => {
+  it('disables the export menu toggle and clear button when there are no lessons', () => {
     const wrapper = mountToolbar(0)
-    expect(wrapper.get('button[data-testid="print"]').attributes('disabled')).toBeDefined()
-    expect(wrapper.get('button[data-testid="export"]').attributes('disabled')).toBeDefined()
+    expect(
+      wrapper.get('button[data-testid="export-menu-toggle"]').attributes('disabled'),
+    ).toBeDefined()
     expect(wrapper.get('button[data-testid="clear"]').attributes('disabled')).toBeDefined()
+  })
+
+  it('emits print when the print menu item is clicked', async () => {
+    const wrapper = mountToolbar(3)
+    await wrapper.get('button[data-testid="export-menu-toggle"]').trigger('click')
+    await wrapper.get('button[data-testid="print"]').trigger('click')
+    expect(wrapper.emitted('print')).toHaveLength(1)
+  })
+
+  it('emits export when the export menu item is clicked', async () => {
+    const wrapper = mountToolbar(3)
+    await wrapper.get('button[data-testid="export-menu-toggle"]').trigger('click')
+    await wrapper.get('button[data-testid="export"]').trigger('click')
+    expect(wrapper.emitted('export')).toHaveLength(1)
   })
 })

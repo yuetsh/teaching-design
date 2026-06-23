@@ -204,6 +204,7 @@ describe('WorkspaceView', () => {
     const wrapper = mount(WorkspaceView, { props: { bookId: 'b1' } })
     await flushPromises()
 
+    await wrapper.get('[data-testid="export-menu-toggle"]').trigger('click')
     await wrapper.get('[data-testid="export"]').trigger('click')
     await flushPromises()
 
