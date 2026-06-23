@@ -47,7 +47,7 @@ onUnmounted(() => {
       :data-testid="toggleTestid"
       :disabled="disabled"
       :aria-expanded="open"
-      @click.stop="toggle"
+      @click="toggle"
     >
       {{ label }}
     </button>

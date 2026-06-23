@@ -69,4 +69,21 @@ describe('ToolbarMenuButton', () => {
     expect(wrapper.find('[data-testid="item-a"]').exists()).toBe(false)
     wrapper.unmount()
   })
+
+  it('closes an open menu when another menu button is clicked', async () => {
+    const first = mountMenu({ label: '生成 ▾', toggleTestid: 'generate-menu-toggle' })
+    const second = mountMenu({ label: '导出 ▾', toggleTestid: 'export-menu-toggle' })
+
+    await first.get('button[data-testid="generate-menu-toggle"]').trigger('click')
+    expect(first.find('[data-testid="item-a"]').exists()).toBe(true)
+
+    await second.get('button[data-testid="export-menu-toggle"]').trigger('click')
+    await first.vm.$nextTick()
+
+    expect(second.find('[data-testid="item-a"]').exists()).toBe(true)
+    expect(first.find('[data-testid="item-a"]').exists()).toBe(false)
+
+    first.unmount()
+    second.unmount()
+  })
 })
