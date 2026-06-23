@@ -54,7 +54,7 @@ describe('GenerateMenuButton', () => {
     await wrapper.get('button[data-testid="generate-menu-toggle"]').trigger('click')
     expect(wrapper.find('[data-testid="generate"]').exists()).toBe(true)
 
-    await wrapper.get('div.generate-menu').trigger('keydown', { key: 'Escape' })
+    await wrapper.get('div.toolbar-menu').trigger('keydown', { key: 'Escape' })
 
     expect(wrapper.find('[data-testid="generate"]').exists()).toBe(false)
     wrapper.unmount()
