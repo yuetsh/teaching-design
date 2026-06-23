@@ -56,12 +56,12 @@ onUnmounted(() => {
     </button>
     <ul v-if="open" class="generate-menu-list" role="menu">
       <li role="menuitem">
-        <button type="button" data-testid="generate" @click="select('generate')">生成一篇</button>
-      </li>
-      <li role="menuitem">
         <button type="button" data-testid="batch-generate" @click="select('batchGenerate')">
           批量生成
         </button>
+      </li>
+      <li role="menuitem">
+        <button type="button" data-testid="generate" @click="select('generate')">生成一篇</button>
       </li>
     </ul>
   </div>
