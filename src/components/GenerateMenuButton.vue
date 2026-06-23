@@ -8,7 +8,7 @@ const emit = defineEmits<{
 </script>
 
 <template>
-  <ToolbarMenuButton label="生成教案 ▾" toggle-testid="generate-menu-toggle">
+  <ToolbarMenuButton label="生成 ▾" toggle-testid="generate-menu-toggle">
     <template #default="{ close }">
       <li role="menuitem">
         <button

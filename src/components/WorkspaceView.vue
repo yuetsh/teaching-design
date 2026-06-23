@@ -197,7 +197,7 @@ function closeFixDialog(): void {
 
     <div v-else-if="loadStatus === 'error'" class="app-notice app-notice--error" role="alert">
       <span>{{ loadError }}</span>
-      <button type="button" @click="$emit('back')">返回列表</button>
+      <button type="button" @click="$emit('back')">返回</button>
     </div>
 
     <template v-else>

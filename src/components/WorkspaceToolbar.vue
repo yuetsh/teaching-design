@@ -29,7 +29,7 @@ const saveStatusLabel: Record<SaveStatus, string> = {
 
 <template>
   <header class="workspace-toolbar">
-    <button type="button" data-testid="back" @click="$emit('back')">返回列表</button>
+    <button type="button" data-testid="back" @click="$emit('back')">返回</button>
     <GenerateMenuButton @generate="$emit('generate')" @batch-generate="$emit('batchGenerate')" />
     <ExportMenuButton :disabled="lessonCount === 0" @print="$emit('print')" @export="$emit('export')" />
     <button type="button" data-testid="clear" :disabled="lessonCount === 0" @click="$emit('clear')">清空</button>

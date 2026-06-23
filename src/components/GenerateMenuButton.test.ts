@@ -5,7 +5,7 @@ import GenerateMenuButton from './GenerateMenuButton.vue'
 describe('GenerateMenuButton', () => {
   it('renders the toggle button with the menu closed by default', () => {
     const wrapper = mount(GenerateMenuButton, { attachTo: document.body })
-    expect(wrapper.get('button[data-testid="generate-menu-toggle"]').text()).toContain('生成教案')
+    expect(wrapper.get('button[data-testid="generate-menu-toggle"]').text()).toContain('生成')
     expect(wrapper.find('[data-testid="generate"]').exists()).toBe(false)
     expect(wrapper.find('[data-testid="batch-generate"]').exists()).toBe(false)
     wrapper.unmount()
