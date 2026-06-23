@@ -270,6 +270,42 @@ table {
   cursor: not-allowed;
 }
 
+.generate-menu {
+  position: relative;
+  display: inline-flex;
+}
+
+.generate-menu-list {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  margin: 4px 0 0;
+  padding: 4px;
+  min-width: 120px;
+  list-style: none;
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  z-index: 10;
+}
+
+.generate-menu-list button {
+  display: block;
+  width: 100%;
+  border: none;
+  background: transparent;
+  border-radius: var(--radius-md);
+  padding: 8px 12px;
+  text-align: left;
+  color: var(--green-700);
+  cursor: pointer;
+}
+
+.generate-menu-list button:hover {
+  background: var(--green-100);
+}
+
 .workspace-toolbar-count,
 .workspace-toolbar-warning,
 .workspace-toolbar-status {
@@ -736,6 +772,10 @@ table {
   }
 
   .workspace-toolbar button {
+    flex: 0 0 auto;
+  }
+
+  .workspace-toolbar .generate-menu {
     flex: 0 0 auto;
   }
 
